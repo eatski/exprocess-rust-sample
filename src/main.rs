@@ -7,7 +7,7 @@ mod generator;
 mod pages;
 use pages::{
     author::Author, author_list::AuthorList, home::Home, page_not_found::PageNotFound, post::Post,
-    post_list::PostList,
+    post_list::PostList,room::Room,
 };
 mod switch;
 use switch::{AppAnchor, AppRoute, AppRouter, PublicUrlSwitch};
@@ -48,7 +48,6 @@ impl Component for Model {
         html! {
             <>
                 { self.view_nav() }
-
                 <main>
                     <AppRouter
                         render=AppRouter::render(Self::switch)
@@ -57,16 +56,6 @@ impl Component for Model {
                         })
                     />
                 </main>
-                <footer class="footer">
-                    <div class="content has-text-centered">
-                        { "Powered by " }
-                        <a href="https://yew.rs">{ "Yew" }</a>
-                        { " using " }
-                        <a href="https://bulma.io">{ "Bulma" }</a>
-                        { " and images from " }
-                        <a href="https://unsplash.com">{ "Unsplash" }</a>
-                    </div>
-                </footer>
             </>
         }
     }
@@ -145,6 +134,9 @@ impl Model {
             }
             AppRoute::PageNotFound(Permissive(route)) => {
                 html! { <PageNotFound route=route /> }
+            }
+            AppRoute::Room(id) => {
+                html! { <Room id=id/> }
             }
         }
     }

@@ -3,6 +3,8 @@ use yew_router::{components::RouterAnchor, prelude::*, switch::Permissive};
 
 #[derive(Clone, Debug, Switch)]
 pub enum AppRoute {
+    #[to = "/{id}"]
+    Room(String),
     #[to = "/posts/{}"]
     Post(u64),
     #[to = "/posts/?page={}"]
