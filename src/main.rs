@@ -1,6 +1,7 @@
 use yew::prelude::*;
 use yew_router::{route::Route, switch::Permissive};
 
+mod repository;
 mod components;
 mod content;
 mod generator;
@@ -101,7 +102,7 @@ impl Model {
                             <div class="navbar-dropdown">
                                 <a class="navbar-item">
                                     <AppAnchor classes="navbar-item" route=AppRoute::AuthorList>
-                                        { "Meet the authors" }
+                                        { repository::get_payload() }
                                     </AppAnchor>
                                 </a>
                             </div>

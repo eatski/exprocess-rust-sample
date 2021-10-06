@@ -370,6 +370,7 @@ dependencies = [
  "lipsum",
  "log",
  "rand",
+ "wasm-bindgen",
  "wasm-logger",
  "yew",
  "yew-router",
