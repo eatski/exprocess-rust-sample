@@ -370,6 +370,8 @@ dependencies = [
  "lipsum",
  "log",
  "rand",
+ "serde",
+ "serde_json",
  "wasm-bindgen",
  "wasm-logger",
  "yew",

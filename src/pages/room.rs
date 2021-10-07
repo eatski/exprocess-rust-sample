@@ -1,20 +1,19 @@
 use yew::prelude::*;
-use wasm_bindgen::prelude::*;
-use crate::repository;
+use crate::repository::{MembersRepository};
 
 pub struct Room {
-    id: String,
     members: Vec<Member>,
-    link: Box<ComponentLink<Self>>
+    link: Box<ComponentLink<Self>>,
+    repository: MembersRepository
 }
 
-pub struct Member<> {
+pub struct Member {
     pub name: String,
     pub id: String,
 }
 
 pub enum Msg {
-    AddMember(String)
+    ReplaceMembers(Vec<Member>)
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
@@ -27,9 +26,11 @@ impl Component for Room {
     type Properties = Props;
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        self.members.push(match msg {
-            Msg::AddMember(text) => Member {id: "TODO".to_string(),name: text}
-        });
+        match msg {
+            Msg::ReplaceMembers(members) => {
+                self.members = members;
+            }
+        };
         true
     }
 
@@ -42,7 +43,6 @@ impl Component for Room {
             self.members.iter().map(|member| html! {<li>{&member.name}</li>});
         html! {
             <section>
-                <h2>{ self.id.clone() }</h2>
                 <ul>
                     {for members}
                 </ul>
@@ -51,20 +51,22 @@ impl Component for Room {
     }
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            id: props.id,
             members: Vec::new(),
-            link:Box::new(link)
+            link:Box::new(link),
+            repository: MembersRepository::new(props.id)
         }
     }
     fn rendered(&mut self, first_render: bool) {
         if first_render {
             let link = self.link.clone();
-            let cl = Box::new(move |text:String| {
-                link.send_message(Msg::AddMember(text));
-            }) as Box<dyn Fn(String)>;
-            let cl = Closure::wrap(cl);
-            let callback = Closure::into_js_value(cl);
-            repository::get_payload_later(callback);
+            self.repository.sync(Box::new(move |members| {
+                let members = 
+                    members
+                    .iter()
+                    .map(|member| Member {id:String::from(member.id),name: String::from(member.name)})
+                    .collect::<Vec<Member>>();
+                link.send_message(Msg::ReplaceMembers(members));
+            }));
         }
         
     }

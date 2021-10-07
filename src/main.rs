@@ -1,6 +1,7 @@
 use yew::prelude::*;
 use yew_router::{route::Route, switch::Permissive};
 
+mod javascript;
 mod repository;
 mod components;
 mod content;
@@ -47,72 +48,18 @@ impl Component for Model {
 
     fn view(&self) -> Html {
         html! {
-            <>
-                { self.view_nav() }
-                <main>
-                    <AppRouter
-                        render=AppRouter::render(Self::switch)
-                        redirect=AppRouter::redirect(|route: Route| {
-                            AppRoute::PageNotFound(Permissive(Some(route.route))).into_public()
-                        })
-                    />
-                </main>
-            </>
+            <main>
+                <AppRouter
+                    render=AppRouter::render(Self::switch)
+                    redirect=AppRouter::redirect(|route: Route| {
+                        AppRoute::PageNotFound(Permissive(Some(route.route))).into_public()
+                    })
+                />
+            </main>
         }
     }
 }
 impl Model {
-    fn view_nav(&self) -> Html {
-        let Self {
-            ref link,
-            navbar_active,
-            ..
-        } = *self;
-
-        let active_class = if navbar_active { "is-active" } else { "" };
-
-        html! {
-            <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
-                <div class="navbar-brand">
-                    <h1 class="navbar-item is-size-3">{ "Yew Blog" }</h1>
-
-                    <a role="button"
-                        class=classes!("navbar-burger", "burger", active_class)
-                        aria-label="menu" aria-expanded="false"
-                        onclick=link.callback(|_| Msg::ToggleNavbar)
-                    >
-                        <span aria-hidden="true"></span>
-                        <span aria-hidden="true"></span>
-                        <span aria-hidden="true"></span>
-                    </a>
-                </div>
-                <div class=classes!("navbar-menu", active_class)>
-                    <div class="navbar-start">
-                        <AppAnchor classes="navbar-item" route=AppRoute::Home>
-                            { "Home" }
-                        </AppAnchor>
-                        <AppAnchor classes="navbar-item" route=AppRoute::PostList>
-                            { "Posts" }
-                        </AppAnchor>
-
-                        <div class="navbar-item has-dropdown is-hoverable">
-                            <a class="navbar-link">
-                                { "More" }
-                            </a>
-                            <div class="navbar-dropdown">
-                                <a class="navbar-item">
-                                    <AppAnchor classes="navbar-item" route=AppRoute::AuthorList>
-                                        { repository::get_payload() }
-                                    </AppAnchor>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        }
-    }
-
     fn switch(switch: PublicUrlSwitch) -> Html {
         match switch.route() {
             AppRoute::Post(id) => {
