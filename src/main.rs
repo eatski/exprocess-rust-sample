@@ -4,31 +4,26 @@ use yew_router::{route::Route, switch::Permissive};
 mod javascript;
 mod repository;
 mod components;
-mod content;
-mod generator;
 mod pages;
 use pages::{
-    author::Author, author_list::AuthorList, home::Home, page_not_found::PageNotFound, post::Post,
-    post_list::PostList,room::Room,
+    home::Home, page_not_found::PageNotFound,room::Room,
 };
 mod switch;
-use switch::{AppAnchor, AppRoute, AppRouter, PublicUrlSwitch};
+use switch::{AppRoute, AppRouter, PublicUrlSwitch};
 
 pub enum Msg {
     ToggleNavbar,
 }
 
 pub struct Model {
-    link: ComponentLink<Self>,
     navbar_active: bool,
 }
 impl Component for Model {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_props: Self::Properties, _link: ComponentLink<Self>) -> Self {
         Self {
-            link,
             navbar_active: false,
         }
     }
@@ -62,21 +57,6 @@ impl Component for Model {
 impl Model {
     fn switch(switch: PublicUrlSwitch) -> Html {
         match switch.route() {
-            AppRoute::Post(id) => {
-                html! { <Post seed=id /> }
-            }
-            AppRoute::PostListPage(page) => {
-                html! { <PostList page=page.max(1) /> }
-            }
-            AppRoute::PostList => {
-                html! { <PostList page=1 /> }
-            }
-            AppRoute::Author(id) => {
-                html! { <Author seed=id /> }
-            }
-            AppRoute::AuthorList => {
-                html! { <AuthorList /> }
-            }
             AppRoute::Home => {
                 html! { <Home /> }
             }

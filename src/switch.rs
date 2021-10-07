@@ -5,16 +5,6 @@ use yew_router::{components::RouterAnchor, prelude::*, switch::Permissive};
 pub enum AppRoute {
     #[to = "/{id}"]
     Room(String),
-    #[to = "/posts/{}"]
-    Post(u64),
-    #[to = "/posts/?page={}"]
-    PostListPage(u64),
-    #[to = "/posts/"]
-    PostList,
-    #[to = "/authors/{id}"]
-    Author(u64),
-    #[to = "/authors/"]
-    AuthorList,
     #[to = "/page-not-found"]
     PageNotFound(Permissive<String>),
     #[to = "/!"]
