@@ -11,6 +11,7 @@ pub struct MembersRepository {
 struct MemberJSON<'a> {
     pub name: &'a str,
     pub id: &'a str,
+    pub you: bool
 }
 
 impl MembersRepository {
@@ -27,7 +28,7 @@ impl MembersRepository {
             let members_json : Vec<MemberJSON> = serde_json::from_str(json.as_str()).expect("JSON Parse Error");
             let members = members_json
                 .iter()
-                .map(|member| Member {id:member.id,name: member.name})
+                .map(|member| Member {id:member.id,name: member.name, you: member.you})
                 .collect::<Vec<Member>>();
             callback(members);
         });
@@ -41,7 +42,8 @@ impl MembersRepository {
 
 pub struct Member<'a> {
     pub id: &'a str,
-    pub name: &'a str
+    pub name: &'a str,
+    pub you: bool
 }
 
 pub fn create_room(callback : Box<dyn FnOnce(String)>) {

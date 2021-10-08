@@ -1,4 +1,5 @@
 use yew::prelude::*;
+use yew::virtual_dom::VNode;
 use crate::repository::{MembersRepository};
 use crate::components::input::Input;
 pub struct Room {
@@ -23,6 +24,7 @@ enum FormState {
 pub struct Member {
     pub name: String,
     pub id: String,
+    pub you: bool
 }
 
 pub enum Msg {
@@ -41,9 +43,12 @@ impl Component for Room {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::ReplaceMembers(members) => {
+                let form = if members.iter().any(|m| m.you) 
+                    { FormState::Joined } else 
+                    { FormState::Joinable };
                 self.state = RoomState::Meeting {
                     members:members,
-                    form: FormState::Joinable 
+                    form
                 };
             }
         };
@@ -58,7 +63,14 @@ impl Component for Room {
         let content = match &self.state {
             RoomState::Loading => html! { <div>{"Loading"}</div>},
             RoomState::Meeting {members,form} => {
-                let members_html = members.iter().map(|member| html! {<li>{&member.name}</li>});
+                let members_html = 
+                    members.iter().map(|member| html! {
+                        <li>
+                            <span>{&member.name}</span>
+                            {if member.you {html! {<span>{"⇨YOU"}</span>}} else {html! {}}}
+                        </li>
+                    }
+                );
                 let form_html = match form {
                     FormState::Joinable => {
                         html! { 
@@ -102,13 +114,21 @@ impl Component for Room {
             let members = 
                 members
                 .iter()
-                .map(|member| Member {id:String::from(member.id),name: String::from(member.name)})
+                .map(|member| Member {id:String::from(member.id),name: String::from(member.name), you: member.you})
                 .collect::<Vec<Member>>();
             link.send_message(Msg::ReplaceMembers(members));
         }));
         Self {
             state: RoomState::Loading,
             submit: Callback::from(move |name| repo.save(name))
+        }
+    }
+}
+
+impl Room {
+    fn view_member(member: &Member) -> VNode{
+        html! {
+
         }
     }
 }
