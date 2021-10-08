@@ -3,6 +3,7 @@ use yew_router::{route::Route, switch::Permissive};
 
 mod repository;
 mod components;
+mod containers;
 mod pages;
 use pages::{
     home::Home, page_not_found::PageNotFound,room::Room,
@@ -62,8 +63,8 @@ impl Model {
             AppRoute::PageNotFound(Permissive(route)) => {
                 html! { <PageNotFound route=route /> }
             }
-            AppRoute::Room(id) => {
-                html! { <Room id=id/> }
+            AppRoute::Room(room_id) => {
+                html! { <Room room_id=room_id/> }
             }
         }
     }

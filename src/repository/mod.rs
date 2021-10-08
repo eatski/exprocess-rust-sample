@@ -11,7 +11,7 @@ struct MemberJSON<'a> {
 }
 
 pub fn register_member(room_id: &str,name: &str) {
-    js_bridge::save(room_id,name)
+    js_bridge::register_member(room_id,name)
 }
 
 pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) {
@@ -23,7 +23,7 @@ pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) {
             .collect::<Vec<Member>>();
         callback(members);
     });
-    js_bridge::sync(
+    js_bridge::sync_member(
         room_id, 
         Closure::into_js_value(Closure::wrap(json_callback))
     )
@@ -37,8 +37,32 @@ pub struct Member<'a> {
 }
 
 pub fn create_room(callback : Box<dyn FnOnce(String)>) {
-    js_bridge::create(
+    js_bridge::create_room(
         Closure::into_js_value(Closure::once (callback))
     )
+}
+
+pub enum Phase {
+    RoomNotExists,
+    Meeting,
+    Started
+}
+
+pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Phase) -> ()>) {
+    let callback : Box<dyn Fn(Option<String>)>= Box::new(move |phase| {
+        let phase = match phase {
+            Option::Some(phase) => match phase.as_str() {
+                "MEETING" => Phase::Meeting,
+                "STARTED" => Phase::Started,
+                invalid => panic!("Invalid Phase Value : {}",invalid)
+            },
+            None => Phase::RoomNotExists,
+        };
+        callback(phase);
+    });
+    js_bridge::sync_room(
+        room_id, 
+        Closure::into_js_value(Closure::once (callback))
+    );
 }
 

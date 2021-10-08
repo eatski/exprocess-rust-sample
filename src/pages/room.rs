@@ -1,39 +1,26 @@
 use yew::prelude::*;
-use yew::virtual_dom::VNode;
-use crate::repository::{register_member, sync_members};
-use crate::components::join_form::Input;
+use crate::components::loading::loading;
+use crate::repository::{sync_room,Phase};
+use crate::containers::meeting::{Meeting};
 pub struct Room {
-    state: RoomState,
-    submit: Callback<String>
+    state: State,
+    props: Props
 }
-enum RoomState {
+enum State {
     Loading,
-    Meeting {
-        members: Vec<Member>,
-        form: FormState,
-    },
-    Gathered {
-        members: Vec<Member>,
-    }
-}
-enum FormState {
-    Joinable,
-    Joined
+    Meeting,
+    Started,
+    NotExist
 }
 
-pub struct Member {
-    pub name: String,
-    pub id: String,
-    pub you: bool
-}
 
 pub enum Msg {
-    ReplaceMembers(Vec<Member>)
+    MovePhase(Phase)
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
 pub struct Props {
-    pub id: String
+    pub room_id: String
 }
 
 impl Component for Room {
@@ -42,64 +29,29 @@ impl Component for Room {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::ReplaceMembers(members) => {
-                let form = if members.iter().any(|m| m.you) 
-                    { FormState::Joined } else 
-                    { FormState::Joinable };
-                self.state = RoomState::Meeting {
-                    members:members,
-                    form
-                };
-            }
+            Msg::MovePhase(phase) => self.state = match phase {
+                Phase::RoomNotExists => State::NotExist,
+                Phase::Meeting => State::Meeting,
+                Phase::Started => State::Started,
+            },
         };
         true
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        todo!()
+        panic!()
     }
 
     fn view(&self) -> Html {
         let content = match &self.state {
-            RoomState::Loading => html! { <div>{"Loading"}</div>},
-            RoomState::Meeting {members,form} => {
-                let members_html = 
-                    members.iter().map(|member| html! {
-                        <li>
-                            <span>{&member.name}</span>
-                            {if member.you {html! {<span>{"⇨YOU"}</span>}} else {html! {}}}
-                        </li>
-                    }
-                );
-                let form_html = match form {
-                    FormState::Joinable => {
-                        html! { 
-                            <Input on_submit=self.submit.clone() button="Join"/>
-                        }
-                    }
-                    FormState::Joined => html! {},
-                };
-                html! { 
-                    <>
-                        <h2> { "Meeting"} </h2>
-                        <ul>
-                            { for members_html } 
-                        </ul>
-                        {form_html}
-                    </>
-                }
+            State::Loading => loading(),
+            State::Meeting => html! {<Meeting room_id=self.props.room_id.clone()/>},
+            State::Started => html! { 
+                <h2> { "Gathered" } </h2>
             },
-            RoomState::Gathered { members} => {
-                let members_html = members.iter().map(|member| html! {<li>{&member.name}</li>});
-                html! { 
-                    <>
-                        <h2> { "Gathered" } </h2>
-                        <ul>
-                            { for members_html } 
-                        </ul>
-                    </>
-                }
-            }
+            State::NotExist => html! { 
+                <h2> { "404" } </h2>
+            },
         };
         html! {
             <section>
@@ -108,20 +60,15 @@ impl Component for Room {
         }
     }
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let room_id = props.room_id.as_str();
         //FIXME: unsync
-        sync_members(props.id.as_str() ,Box::new(move |members| {
-            let members = 
-                members
-                .iter()
-                .map(|member| Member {id:String::from(member.id),name: String::from(member.name), you: member.you})
-                .collect::<Vec<Member>>();
-            link.send_message(Msg::ReplaceMembers(members));
-        }));
+        sync_room(
+            room_id, 
+            Box::new(move |phase| link.send_message(Msg::MovePhase(phase)))
+        );
         Self {
-            state: RoomState::Loading,
-            submit: Callback::from(
-                move |name: String| register_member(props.id.as_str(),name.as_str())
-            )
+            state: State::Loading,
+            props
         }
     }
 }

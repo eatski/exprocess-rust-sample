@@ -1,14 +1,18 @@
-import { registerMember, syncMember } from "./js/memberRepository";
-import { createRoom } from "./js/room";
+import * as member from "./js/memberRepository";
+import * as room from "./js/room";
 
-export function sync(roomid:string,fn: (json:string) => void) {
-    syncMember(roomid,fn);
+export function syncMember(roomid:string,fn: (json:string) => void) {
+    member.syncMember(roomid,fn);
 }
 
-export function save(roomid:string,name:string) {
-    registerMember(roomid,name);
+export function registerMember(roomid:string,name:string) {
+    member.registerMember(roomid,name);
 }
 
-export function create(fn:(id:string) => void ) {
-    createRoom().then(fn);
+export function createRoom(callback:(id:string) => void) {
+    room.createRoom().then(callback);
+}
+
+export function syncRoom(roomId:string,callback:(id:string | null) => void) {
+    room.syncRoom(roomId,callback)
 }
