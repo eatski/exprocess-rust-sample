@@ -44,3 +44,9 @@ pub struct Member<'a> {
     pub name: &'a str
 }
 
+pub fn create_room(callback : Box<dyn FnOnce(String)>) {
+    javascript::create(
+        Closure::into_js_value(Closure::once (callback))
+    )
+}
+
