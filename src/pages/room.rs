@@ -97,7 +97,6 @@ impl Component for Room {
     }
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let repo = MembersRepository::new(props.id);
-        let clone_link = link.clone();
         //FIXME: unsync
         repo.sync(Box::new(move |members| {
             let members = 
@@ -105,7 +104,7 @@ impl Component for Room {
                 .iter()
                 .map(|member| Member {id:String::from(member.id),name: String::from(member.name)})
                 .collect::<Vec<Member>>();
-            clone_link.send_message(Msg::ReplaceMembers(members));
+            link.send_message(Msg::ReplaceMembers(members));
         }));
         Self {
             state: RoomState::Loading,
