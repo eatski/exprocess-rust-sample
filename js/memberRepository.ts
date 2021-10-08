@@ -18,8 +18,8 @@ export const syncMember = (roomId:string,listener:(json:string) => void) => {
     const rooms = collection(db,"rooms");
     const room = doc(rooms,roomId);
     const members = collection(room,"members");
-    const yourId = window.localStorage.getItem(toYourIdKey(roomId));
     onSnapshot(members,(snapshot) => {
+        const yourId = window.localStorage.getItem(toYourIdKey(roomId));
         const json = JSON.stringify(
             snapshot.docs.map(doc => ({
                 ...doc.data(),
