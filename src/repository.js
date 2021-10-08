@@ -18,6 +18,6 @@ export function sync(roomid,namespace,fn) {
     },1000);
 }
 
-export function save() {
-
+export function save(roomid,namespace,name) {
+    console.log(roomid,namespace,name);
 }

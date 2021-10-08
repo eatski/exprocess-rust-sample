@@ -19,21 +19,21 @@ impl MembersRepository {
             room_id:room_id
         }
     }
-    pub fn save(&self,member:Member) {
-        
+    pub fn save(&self,name:String) {
+        javascript::save(self.room_id.as_str(), "members", name.as_str())
     }
     pub fn sync(&self,callback:Box<dyn Fn(Vec<Member>) -> ()>) {
-        let json_callback = Box::new(move |json:String| {
+        let json_callback : Box<dyn Fn(String)>= Box::new(move |json:String| {
             let members_json : Vec<MemberJSON> = serde_json::from_str(json.as_str()).expect("JSON Parse Error");
             let members = members_json
                 .iter()
-                .map(|member: &MemberJSON| Member {id:member.id,name: member.name})
+                .map(|member| Member {id:member.id,name: member.name})
                 .collect::<Vec<Member>>();
             callback(members);
-        }) as Box<dyn Fn(String)>;
+        });
         javascript::sync(
             self.room_id.as_str(), 
-            "room", 
+            "members", 
             Closure::into_js_value(Closure::wrap(json_callback))
         )
         

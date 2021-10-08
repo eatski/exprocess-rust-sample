@@ -1,10 +1,23 @@
 use yew::prelude::*;
 use crate::repository::{MembersRepository};
-
+use crate::components::input::Input;
 pub struct Room {
-    members: Vec<Member>,
-    link: Box<ComponentLink<Self>>,
-    repository: MembersRepository
+    state: RoomState,
+    submit: Callback<String>
+}
+enum RoomState {
+    Loading,
+    Meeting {
+        members: Vec<Member>,
+        form: FormState,
+    },
+    Gathered {
+        members: Vec<Member>,
+    }
+}
+enum FormState {
+    Joinable,
+    Joined
 }
 
 pub struct Member {
@@ -28,7 +41,10 @@ impl Component for Room {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::ReplaceMembers(members) => {
-                self.members = members;
+                self.state = RoomState::Meeting {
+                    members:members,
+                    form: FormState::Joinable 
+                };
             }
         };
         true
@@ -39,35 +55,61 @@ impl Component for Room {
     }
 
     fn view(&self) -> Html {
-        let members = 
-            self.members.iter().map(|member| html! {<li>{&member.name}</li>});
+        let content = match &self.state {
+            RoomState::Loading => html! { <div>{"Loading"}</div>},
+            RoomState::Meeting {members,form} => {
+                let members_html = members.iter().map(|member| html! {<li>{&member.name}</li>});
+                let form_html = match form {
+                    FormState::Joinable => {
+                        html! { 
+                            <Input on_submit=self.submit.clone()/>
+                        }
+                    }
+                    FormState::Joined => html! {},
+                };
+                html! { 
+                    <>
+                        <h2> { "Meeting"} </h2>
+                        <ul>
+                            { for members_html } 
+                        </ul>
+                        {form_html}
+                    </>
+                }
+            },
+            RoomState::Gathered { members} => {
+                let members_html = members.iter().map(|member| html! {<li>{&member.name}</li>});
+                html! { 
+                    <>
+                        <h2> { "Gathered" } </h2>
+                        <ul>
+                            { for members_html } 
+                        </ul>
+                    </>
+                }
+            }
+        };
         html! {
             <section>
-                <ul>
-                    {for members}
-                </ul>
+                {content}
             </section>
         }
     }
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let repo = MembersRepository::new(props.id);
+        let clone_link = link.clone();
+        //FIXME: unsync
+        repo.sync(Box::new(move |members| {
+            let members = 
+                members
+                .iter()
+                .map(|member| Member {id:String::from(member.id),name: String::from(member.name)})
+                .collect::<Vec<Member>>();
+            clone_link.send_message(Msg::ReplaceMembers(members));
+        }));
         Self {
-            members: Vec::new(),
-            link:Box::new(link),
-            repository: MembersRepository::new(props.id)
+            state: RoomState::Loading,
+            submit: Callback::from(move |name| repo.save(name))
         }
-    }
-    fn rendered(&mut self, first_render: bool) {
-        if first_render {
-            let link = self.link.clone();
-            self.repository.sync(Box::new(move |members| {
-                let members = 
-                    members
-                    .iter()
-                    .map(|member| Member {id:String::from(member.id),name: String::from(member.name)})
-                    .collect::<Vec<Member>>();
-                link.send_message(Msg::ReplaceMembers(members));
-            }));
-        }
-        
     }
 }
