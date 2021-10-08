@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "esbuild index.ts --bundle --minify --outfile=build/index.js --format=esm"
+    "build": "esbuild index.ts --bundle --minify --outfile=build/index.js --format=esm",
+    "dev": "esbuild index.ts --bundle --outfile=build/index.js --format=esm --watch"
   },
   "repository": {
     "type": "git",

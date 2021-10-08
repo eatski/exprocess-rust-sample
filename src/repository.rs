@@ -20,7 +20,7 @@ impl MembersRepository {
         }
     }
     pub fn save(&self,name:String) {
-        javascript::save(self.room_id.as_str(), "members", name.as_str())
+        javascript::save(self.room_id.as_str(),name.as_str())
     }
     pub fn sync(&self,callback:Box<dyn Fn(Vec<Member>) -> ()>) {
         let json_callback : Box<dyn Fn(String)>= Box::new(move |json:String| {
@@ -33,7 +33,6 @@ impl MembersRepository {
         });
         javascript::sync(
             self.room_id.as_str(), 
-            "members", 
             Closure::into_js_value(Closure::wrap(json_callback))
         )
         

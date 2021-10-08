@@ -4,8 +4,8 @@ use wasm_bindgen::prelude::*;
 extern "C" {
 
     #[wasm_bindgen(js_name = "save")]
-    pub fn save(roomId: &str,namespace: &str, json: &str);
+    pub fn save(roomId: &str,json: &str);
 
     #[wasm_bindgen(js_name = "sync")]
-    pub fn sync(roomId: &str,namespace: &str, callback: JsValue);
+    pub fn sync(roomId: &str,callback: JsValue);
 }

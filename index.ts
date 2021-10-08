@@ -1,15 +1,9 @@
-export function sync(roomid:string,namespace:string,fn: (json:string) => void) {
-    let cnt = 0;
-    setInterval(() => {
-        const json = JSON.stringify([{
-            id:roomid + ":" + cnt.toString(),
-            name: namespace + ":" + cnt.toString()
-        }]);
-        cnt++;
-        fn(json);
-    },1000);
+import { registerMember, syncMember } from "./js/memberRepository";
+
+export function sync(roomid:string,fn: (json:string) => void) {
+    syncMember(roomid,fn);
 }
 
-export function save(roomid:string,namespace:string,name:string) {
-    console.log(roomid,namespace,name);
+export function save(roomid:string,name:string) {
+    registerMember(roomid,name);
 }
