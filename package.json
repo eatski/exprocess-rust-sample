@@ -1,0 +1,24 @@
+{
+  "name": "yew-poc",
+  "version": "1.0.0",
+  "description": "[![Demo](https://img.shields.io/website?label=demo&url=https%3A%2F%2Fexamples.yew.rs%2Frouter)](https://examples.yew.rs/router)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild index.ts --bundle --minify --outfile=build/index.js --format=esm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itskihaga/yew-poc.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/itskihaga/yew-poc/issues"
+  },
+  "homepage": "https://github.com/itskihaga/yew-poc#readme",
+  "dependencies": {
+    "esbuild": "^0.13.4",
+    "typescript": "^4.4.3"
+  }
+}
