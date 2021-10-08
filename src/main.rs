@@ -1,7 +1,6 @@
 use yew::prelude::*;
 use yew_router::{route::Route, switch::Permissive};
 
-mod javascript;
 mod repository;
 mod components;
 mod pages;

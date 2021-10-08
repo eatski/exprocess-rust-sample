@@ -1,8 +1,8 @@
 use yew::prelude::*;
 pub struct Input {
     value: String,
-    on_submit: OnSubmit,
-    link: ComponentLink<Self>
+    link: ComponentLink<Self>,
+    props: Props
 }
 
 type OnSubmit =  Callback<String>;
@@ -10,11 +10,12 @@ type OnSubmit =  Callback<String>;
 #[derive(Clone, PartialEq, Properties)]
 pub struct Props {
     pub on_submit: OnSubmit,
+    pub button: String,
 }
 
 pub enum Msg {
     Change(String),
-    Reset
+    Submit(String)
 }
 
 impl Component for Input {
@@ -23,7 +24,7 @@ impl Component for Input {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            on_submit: props.on_submit,
+            props: props,
             value: String::from(""),
             link
         }
@@ -32,7 +33,10 @@ impl Component for Input {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::Change(value) => self.value = value,
-            Msg::Reset => self.value = String::from("")
+            Msg::Submit(value) => {
+                self.value = String::from("");
+                self.props.on_submit.emit(value)
+            }
         }
         true
     }
@@ -42,22 +46,14 @@ impl Component for Input {
     }
 
     fn view(&self) -> Html {
-        let link = self.link.clone();
-        let onchange = Callback::from(move |e| {
-            match e {
-                ChangeData::Value(value) => {
-                    link.send_message(Msg::Change(value));
-                },
-                _ => ()
+        let onchange = self.link.callback(|data|
+            match data {
+                ChangeData::Value(value) => Msg::Change(value),
+                _ => panic!("Invalid Type")
             }
-        });
-        let on_submit = self.on_submit.clone();
+        );
         let value = self.value.clone();
-        let link = self.link.clone();
-        let onclick= Callback::once(move |_| {
-            on_submit.emit(value);
-            link.send_message(Msg::Reset);
-        });
+        let onclick= self.link.callback_once(move |_| Msg::Submit(value));
         let value = self.value.clone();
         html! {
             <div>

@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew::virtual_dom::VNode;
-use crate::repository::{MembersRepository};
-use crate::components::input::Input;
+use crate::repository::{register_member, sync_members};
+use crate::components::join_form::Input;
 pub struct Room {
     state: RoomState,
     submit: Callback<String>
@@ -74,7 +74,7 @@ impl Component for Room {
                 let form_html = match form {
                     FormState::Joinable => {
                         html! { 
-                            <Input on_submit=self.submit.clone()/>
+                            <Input on_submit=self.submit.clone() button="Join"/>
                         }
                     }
                     FormState::Joined => html! {},
@@ -108,9 +108,8 @@ impl Component for Room {
         }
     }
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let repo = MembersRepository::new(props.id);
         //FIXME: unsync
-        repo.sync(Box::new(move |members| {
+        sync_members(props.id.as_str() ,Box::new(move |members| {
             let members = 
                 members
                 .iter()
@@ -120,15 +119,9 @@ impl Component for Room {
         }));
         Self {
             state: RoomState::Loading,
-            submit: Callback::from(move |name| repo.save(name))
-        }
-    }
-}
-
-impl Room {
-    fn view_member(member: &Member) -> VNode{
-        html! {
-
+            submit: Callback::from(
+                move |name: String| register_member(props.id.as_str(),name.as_str())
+            )
         }
     }
 }

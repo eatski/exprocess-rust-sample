@@ -2,7 +2,6 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(module = "/build/index.js")]
 extern "C" {
-
     #[wasm_bindgen(js_name = "save")]
     pub fn save(roomId: &str,json: &str);
 
