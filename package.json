@@ -20,6 +20,8 @@
   "homepage": "https://github.com/itskihaga/yew-poc#readme",
   "dependencies": {
     "esbuild": "^0.13.4",
+    "firebase": "^9.1.2",
+    "firebase-tools": "^9.20.0",
     "typescript": "^4.4.3"
   }
 }
