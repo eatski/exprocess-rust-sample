@@ -36,33 +36,51 @@ pub struct Member<'a> {
     pub you: bool
 }
 
-pub fn create_room(callback : Box<dyn FnOnce(String)>) {
+pub fn create_room(hostname: &str,callback : Box<dyn FnOnce(String)>) {
     js_bridge::create_room(
+        hostname,
         Closure::into_js_value(Closure::once (callback))
     )
 }
 
 pub enum Phase {
-    RoomNotExists,
     Meeting,
     Started
 }
 
-pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Phase) -> ()>) {
-    let callback : Box<dyn Fn(Option<String>)>= Box::new(move |phase| {
-        let phase = match phase {
-            Option::Some(phase) => match phase.as_str() {
-                "MEETING" => Phase::Meeting,
-                "STARTED" => Phase::Started,
-                invalid => panic!("Invalid Phase Value : {}",invalid)
-            },
-            None => Phase::RoomNotExists,
-        };
-        callback(phase);
+
+pub struct Room {
+    pub phase: Phase,
+    pub is_host: bool  
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RoomJSON<'a> {
+    pub phase: &'a str,
+    pub is_host: bool  
+}
+
+pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) {
+    let callback = Box::new(move |room: Option<String>| {
+        let room = room.map(|room| -> Room {
+            let room: RoomJSON = serde_json::from_str(room.as_str()).expect("JSON Parse Error");
+            Room { 
+                phase: match room.phase {
+                    "MEETING" => Phase::Meeting,
+                    "STARTED" => Phase::Started,
+                    invalid => panic!("Invalid Value {}",invalid)
+                }, 
+                is_host: room.is_host 
+            }
+        });
+        callback(room);
     });
     js_bridge::sync_room(
         room_id, 
-        Closure::into_js_value(Closure::once (callback))
+        callback
     );
 }
 
+pub fn start_room(room_id: &str) {
+    js_bridge::start_room(room_id);
+}

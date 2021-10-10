@@ -1,21 +1,22 @@
 use yew::prelude::*;
 use crate::components::loading::loading;
-use crate::repository::{sync_room,Phase};
-use crate::containers::meeting::{Meeting};
+use crate::repository::{sync_room,Room as RoomData,Phase,start_room};
+use crate::containers::meeting::{Meeting,MeetingHost};
 pub struct Room {
     state: State,
-    props: Props
+    props: Props,
+    link: ComponentLink<Self>
 }
 enum State {
     Loading,
-    Meeting,
-    Started,
-    NotExist
+    Fetched(RoomData),
+    NotExists
 }
 
-
 pub enum Msg {
-    MovePhase(Phase)
+    UpdateRoom(RoomData),
+    RoomNotExists,
+    Start
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
@@ -29,11 +30,9 @@ impl Component for Room {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::MovePhase(phase) => self.state = match phase {
-                Phase::RoomNotExists => State::NotExist,
-                Phase::Meeting => State::Meeting,
-                Phase::Started => State::Started,
-            },
+            Msg::UpdateRoom(room) => self.state = State::Fetched(room),
+            Msg::RoomNotExists => self.state = State::NotExists,
+            Msg::Start => start_room(&self.props.room_id)
         };
         true
     }
@@ -45,11 +44,16 @@ impl Component for Room {
     fn view(&self) -> Html {
         let content = match &self.state {
             State::Loading => loading(),
-            State::Meeting => html! {<Meeting room_id=self.props.room_id.clone()/>},
-            State::Started => html! { 
-                <h2> { "Gathered" } </h2>
-            },
-            State::NotExist => html! { 
+            State::Fetched(room) => match room.phase {
+                Phase::Meeting =>  if !room.is_host {
+                    html! {<Meeting room_id=self.props.room_id.clone()/>}
+                } else {
+                    let start = self.link.callback(|_| Msg::Start);
+                    html! {<MeetingHost room_id=self.props.room_id.clone() start=start/>}
+                },
+                Phase::Started => todo!(),
+            }
+            State::NotExists => html! { 
                 <h2> { "404" } </h2>
             },
         };
@@ -61,14 +65,16 @@ impl Component for Room {
     }
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let room_id = props.room_id.as_str();
+        let callback = link.callback(|room : Option<RoomData>| room.map_or(Msg::RoomNotExists, Msg::UpdateRoom));
         //FIXME: unsync
         sync_room(
             room_id, 
-            Box::new(move |phase| link.send_message(Msg::MovePhase(phase)))
+            Box::new(move |room| callback.emit(room))
         );
         Self {
             state: State::Loading,
-            props
+            props,
+            link
         }
     }
 }

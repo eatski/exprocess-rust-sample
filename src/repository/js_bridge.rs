@@ -9,8 +9,17 @@ extern "C" {
     pub fn sync_member(room_id: &str,callback: JsValue);
 
     #[wasm_bindgen(js_name = "createRoom")]
-    pub fn create_room(callback: JsValue);
+    pub fn create_room(hostName:&str,callback: JsValue);
 
     #[wasm_bindgen(js_name = "syncRoom")]
-    pub fn sync_room(room_id: &str,callback: JsValue);
+    fn sync_room_bridge(room_id: &str,callback: JsValue);
+
+    #[wasm_bindgen(js_name = "startRoom")]
+    pub fn start_room(room_id: &str);
+}
+
+
+pub fn sync_room(room_id: &str,callback: Box<dyn Fn(Option<String>)>) {
+    let callback = Closure::into_js_value(Closure::wrap(callback));
+    sync_room_bridge(room_id,callback);
 }

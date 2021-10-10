@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use yew_router::{agent::RouteRequest, prelude::*};
-use crate::repository::{create_room,register_member};
+use crate::repository::{create_room};
 use crate::components::join_form::{Input};
 
 use crate::switch::AppRoute;
@@ -25,8 +25,9 @@ impl Component for Home {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::CreateRoom(name) => {
-                create_room(Box::new(move |id| {
-                    register_member(id.as_str(), name.as_str());
+                create_room(
+                    &name,
+                    Box::new(move |id| {
                     let route = AppRoute::Room(id);
                     let mut dispatcher = RouteAgentDispatcher::new();
                     dispatcher.send(RouteRequest::ChangeRoute(route.into_route()));

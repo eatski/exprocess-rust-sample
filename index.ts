@@ -9,10 +9,17 @@ export function registerMember(roomid:string,name:string) {
     member.registerMember(roomid,name);
 }
 
-export function createRoom(callback:(id:string) => void) {
-    room.createRoom().then(callback);
+export async function createRoom(hostUserName:string,callback:(roomId:string) => void) {
+    const roomId = room.publishRoomId();
+    const hostId = await member.registerMember(roomId,hostUserName);
+    await room.openRoom(roomId,hostId);
+    callback(roomId);
 }
 
-export function syncRoom(roomId:string,callback:(id:string | null) => void) {
+export function syncRoom(roomId:string,callback:(id:room.Room | null) => void) {
     room.syncRoom(roomId,callback)
+}
+
+export function startRoom(roomId:string) {
+    room.startRoom(roomId);
 }
