@@ -16,7 +16,7 @@ export async function createRoom(hostUserName:string,callback:(roomId:string) =>
     callback(roomId);
 }
 
-export function syncRoom(roomId:string,callback:(id:room.Room | null) => void) {
+export function syncRoom(roomId:string,callback:(id:string | null) => void) {
     room.syncRoom(roomId,callback)
 }
 
