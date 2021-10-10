@@ -1,5 +1,6 @@
 use yew::prelude::*;
 use crate::components::loading::loading;
+use crate::containers::main::Main;
 use crate::repository::{sync_room,Room as RoomData,Phase,start_room};
 use crate::containers::meeting::{Meeting,MeetingHost};
 pub struct Room {
@@ -51,7 +52,7 @@ impl Component for Room {
                     let start = self.link.callback(|_| Msg::Start);
                     html! {<MeetingHost room_id=self.props.room_id.clone() start=start/>}
                 },
-                Phase::Started => todo!(),
+                Phase::Started => html! {<Main is_host=room.is_host/>},
             }
             State::NotExists => html! { 
                 <h2> { "404" } </h2>

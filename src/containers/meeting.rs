@@ -205,7 +205,8 @@ impl Component for MeetingHost {
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        panic!()
+        // propsのせいで発火する
+        true
     }
 
     fn view(&self) -> Html {
