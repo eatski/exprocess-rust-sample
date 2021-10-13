@@ -4,6 +4,7 @@ use yew_router::{route::Route, switch::Permissive};
 mod repository;
 mod components;
 mod containers;
+mod domain;
 mod pages;
 use pages::{
     home::Home, page_not_found::PageNotFound,room::Room,
