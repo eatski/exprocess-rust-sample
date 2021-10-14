@@ -4,11 +4,13 @@ use super::exprocess::{AppCore};
 pub struct AppRepository;
 
 impl Repository<AppCore> for AppRepository {
-    fn start(listener: Box<dyn Fn(Record<AppCore>)>) -> Self {
+  
+
+    fn push(&mut self,record: &Record<AppCore>) {
         todo!()
     }
 
-    fn push(&mut self,record: &Record<AppCore>) {
+    fn start(listener: Box<dyn FnMut(Record<AppCore>)>) -> Self {
         todo!()
     }
 }

@@ -15,7 +15,7 @@ pub struct Record<'a,Core: ExprocessCore> {
     pub id: &'a str
 }
 pub trait Repository<Core: ExprocessCore> {
-    fn start(listener: Box<dyn Fn(Record<Core>)>) -> Self;
+    fn start(listener: Box<dyn FnMut(Record<Core>)>) -> Self;
     fn push(&mut self,record: &Record<Core>);
 }
 
@@ -34,22 +34,22 @@ impl <Core: ExprocessCore + 'static,Repo: Repository<Core>> Runner<Core,Repo> {
     pub fn start(
         listener: Listener<Core>
     ) -> Self {
-        let state = StateWrapper { value:Core::init() };
-        let stack :Vec<String>= Vec::new();
-        let repository = Repo::start( Box::new(|_| {
-            // let found = stack
-            //     .iter()
-            //     .enumerate()
-            //     .find(|(_,id)| id.as_str() == record.id);
-            // match found {
-            //     Some((index,_)) => {stack.remove(index);},
-            //     None => {
-            //         let next = Core::reducer(&state.value, record.result);
-            //         state.value = next;
-            //     }
-            // };
-            todo!()
+        let mut state = StateWrapper { value:Core::init() };
+        let mut stack :Vec<String>= Vec::new();
+        let repository = Repo::start( Box::new(move |record| {
+            let found = stack
+                .iter()
+                .enumerate()
+                .find(|(_,id)| id.as_str() == record.id);
+            match found {
+                Some((index,_)) => {stack.remove(index);},
+                None => {
+                    let next = Core::reducer(&state.value, record.result);
+                    state.value = next;
+                }
+            };
         }));
+        todo!();
         Self {
             state,
             repository,
