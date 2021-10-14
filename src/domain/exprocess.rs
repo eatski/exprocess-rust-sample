@@ -4,7 +4,7 @@ pub enum AppState {
 
 }
 pub enum AppCommand {
-
+    Init
 }
 pub enum AppResult {
 

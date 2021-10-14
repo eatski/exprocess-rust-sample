@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::domain::{Runner, exprocess::AppState};
+use crate::domain::{Runner, exprocess::AppState, exprocess::AppCommand};
 
 pub struct Main {
     runner:Runner
@@ -28,7 +28,8 @@ impl Component for Main {
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        todo!()
+        self.runner.dispatch(AppCommand::Init);
+        todo!();
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {

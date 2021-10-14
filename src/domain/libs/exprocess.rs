@@ -9,17 +9,17 @@ pub trait ExprocessCore {
     fn reducer(prev: &Self::State, result: &Self::Result) -> Self::State;
 }
 
-pub struct Record<'a,Command,Result> {
-    pub command: &'a Command,
-    pub result: &'a Result,
+pub struct Record<'a,Core: ExprocessCore> {
+    pub command: &'a Core::Command,
+    pub result: &'a Core::Result,
     pub id: &'a str
 }
 pub trait Repository<Core: ExprocessCore> {
-    fn start(listener: Box<dyn Fn(Record<Core::Command,Core::Result>)>) -> Self;
-    fn push(&mut self,record: &Record<Core::Command,Core::Result>);
+    fn start(listener: Box<dyn Fn(Record<Core>)>) -> Self;
+    fn push(&mut self,record: &Record<Core>);
 }
 
-pub type Listener<Core: ExprocessCore> = Box<dyn FnMut(Record<Core::Command, Core::Result>,Core::State)>;
+pub type Listener<Core: ExprocessCore> = Box<dyn FnMut(Record<Core>,Core::State)>;
 pub struct Runner<Core: ExprocessCore,Repo: Repository<Core>> {
     state: StateWrapper<Core::State>,
     repository: Repo,
@@ -57,15 +57,15 @@ impl <Core: ExprocessCore + 'static,Repo: Repository<Core>> Runner<Core,Repo> {
             listener
         }
     }
-    pub fn dispatch(&mut self,command: &Core::Command){
+    pub fn dispatch(&mut self,command: Core::Command){
         let state = &self.state.value;
-        let result = &Core::resolve(state, command);
+        let result = &Core::resolve(state, &command);
         let id = Uuid::new_v4().to_hyphenated().to_string();
         let id2 = id.clone();
         let record = Record {
             id:id.as_str(),
             result,
-            command,
+            command:&command,
         };
         self.repository.push(&record);
         self.stack.push(id2);
