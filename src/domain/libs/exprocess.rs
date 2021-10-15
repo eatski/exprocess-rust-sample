@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use uuid::Uuid;
 
 pub trait ExprocessCore {
@@ -19,47 +21,61 @@ pub trait Repository<Core: ExprocessCore> {
     fn push(&mut self,record: &Record<Core>);
 }
 
-pub type Listener<Core: ExprocessCore> = Box<dyn FnMut(Record<Core>,Core::State)>;
+pub type Listener<Core: ExprocessCore> = Box<dyn FnMut(&Record<Core>,&Core::State)>;
 pub struct Runner<Core: ExprocessCore,Repo: Repository<Core>> {
-    state: StateWrapper<Core::State>,
     repository: Repo,
+    shared: Shared<VarsToShare <Core>>
+}
+
+struct VarsToShare <Core: ExprocessCore>{
+    state: Core::State,
     stack: Vec<String>,
     listener: Listener<Core>
 }
-struct StateWrapper<State> {
-    value: State
+
+type Shared<T> = Rc<RefCell<T>>;
+
+fn shared<T>(content:T) -> Shared<T> {
+    Rc::new(RefCell::new(content))
 }
+
 //FIXME: ちゃんとやる
 impl <Core: ExprocessCore + 'static,Repo: Repository<Core>> Runner<Core,Repo> {
     pub fn start(
         listener: Listener<Core>
     ) -> Self {
-        let mut state = StateWrapper { value:Core::init() };
-        let mut stack :Vec<String>= Vec::new();
+        let shared = shared(
+            VarsToShare {
+                state: Core::init(),
+                stack: Vec::new(),
+                listener
+            }
+        );
+        let cloned = shared.clone();
         let repository = Repo::start( Box::new(move |record| {
-            let found = stack
+            let mut shared = cloned.borrow_mut();
+            let found = shared.stack
                 .iter()
                 .enumerate()
                 .find(|(_,id)| id.as_str() == record.id);
             match found {
-                Some((index,_)) => {stack.remove(index);},
+                Some((index,_)) => {shared.stack.remove(index);},
                 None => {
-                    let next = Core::reducer(&state.value, record.result);
-                    state.value = next;
+                    let next = Core::reducer(&shared.state, record.result);
+                    (shared.listener)(&record,&next);
+                    shared.state = next;
                 }
             };
         }));
-        todo!();
+        let cloned = shared.clone();
         Self {
-            state,
-            repository,
-            stack,
-            listener
+            shared:cloned,
+            repository
         }
     }
     pub fn dispatch(&mut self,command: Core::Command){
-        let state = &self.state.value;
-        let result = &Core::resolve(state, &command);
+        let mut shared = self.shared.borrow_mut();
+        let result = &Core::resolve(&shared.state, &command);
         let id = Uuid::new_v4().to_hyphenated().to_string();
         let id2 = id.clone();
         let record = Record {
@@ -68,9 +84,10 @@ impl <Core: ExprocessCore + 'static,Repo: Repository<Core>> Runner<Core,Repo> {
             command:&command,
         };
         self.repository.push(&record);
-        self.stack.push(id2);
-        let state = Core::reducer(state,result);
-        (self.listener)(record,state);
+        shared.stack.push(id2);
+        let next = Core::reducer(&shared.state,result);
+        (shared.listener)(&record,&next);
+        shared.state = next;
     }
 
 }

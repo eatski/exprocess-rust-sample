@@ -5,8 +5,16 @@ pub struct Main {
     runner:Runner
 }
 
+pub struct ViewState {
+
+}
+
+fn app_state_to_view_state(app:&AppState) -> ViewState {
+    todo!()
+}
+
 pub enum Msg {
-    UpdateState(AppState)
+    UpdateState(ViewState)
 } 
 
 #[derive(Clone,Eq,PartialEq,Properties)]
@@ -20,7 +28,7 @@ impl Component for Main {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let runner = Runner::start(
-            Box::new(move |_,state| link.send_message(Msg::UpdateState(state)))
+            Box::new(move |_,state| link.send_message(Msg::UpdateState(app_state_to_view_state(state))))
         );
         Main {
             runner
