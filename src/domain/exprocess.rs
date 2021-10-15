@@ -1,13 +1,18 @@
 use super::libs::exprocess::ExprocessCore;
 
 pub enum AppState {
-
+    Blank,
+    Standby(Vec<String>),
+    Picked
 }
+
 pub enum AppCommand {
-    Init
+    Init(Vec<String>),
+    Pick
 }
 pub enum AppResult {
-
+    Init(Vec<String>),
+    Picked
 }
 
 pub struct AppCore;
@@ -17,14 +22,20 @@ impl ExprocessCore for AppCore {
     type Result = AppResult;
 
     fn init() -> Self::State {
-        todo!()
+        AppState::Blank
     }
 
-    fn resolve(prev: &Self::State,command: &Self::Command) -> Self::Result {
-        todo!()
+    fn resolve(_prev: &Self::State,command: &Self::Command) -> Self::Result {
+        match command {
+            AppCommand::Init(members) => AppResult::Init(members.clone()),
+            AppCommand::Pick => todo!(),
+        }
     }
 
-    fn reducer(prev: &Self::State, result: &Self::Result) -> Self::State {
-        todo!()
+    fn reducer(_prev: &Self::State, result: &Self::Result) -> Self::State {
+        match result {
+            AppResult::Init(members) => AppState::Standby(members.clone()),
+            AppResult::Picked => todo!(),
+        }
     }
 }

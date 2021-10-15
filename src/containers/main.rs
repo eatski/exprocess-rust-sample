@@ -1,16 +1,23 @@
 use yew::prelude::*;
-use crate::domain::{Runner, exprocess::AppState, exprocess::AppCommand};
+use crate::domain::{Runner, exprocess::AppState,exprocess::AppCommand};
 
 pub struct Main {
-    runner:Runner
+    runner:Runner,
+    state: ViewState,
+    props: Props
 }
 
-pub struct ViewState {
-
+pub enum ViewState {
+    Blank,
+    Standby(Vec<String>)
 }
 
 fn app_state_to_view_state(app:&AppState) -> ViewState {
-    todo!()
+    match app {
+        AppState::Blank => ViewState::Blank,
+        AppState::Standby(members) => ViewState::Standby(members.clone()),
+        AppState::Picked => todo!(),
+    }
 }
 
 pub enum Msg {
@@ -31,22 +38,48 @@ impl Component for Main {
             Box::new(move |_,state| link.send_message(Msg::UpdateState(app_state_to_view_state(state))))
         );
         Main {
-            runner
+            state: ViewState::Blank,
+            runner,
+            props
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        self.runner.dispatch(AppCommand::Init);
-        todo!();
+        match msg {
+            Msg::UpdateState(state) => {
+                self.state = state;
+            },
+        };
+        true
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
         panic!()
     }
 
-    fn view(&self) -> Html {
-        html! {
-            "Started"
+    fn rendered(&mut self, _first_render: bool) {
+        if _first_render && self.props.is_host {
+            self.runner.dispatch(AppCommand::Init(vec![]))
         }
+    }
+
+    fn view(&self) -> Html {
+        match &self.state {
+            ViewState::Blank => html! {
+                "Started"
+            },
+            ViewState::Standby(members) => {
+                html! {
+                    <ul>
+                        {for members.iter().map(|member| {
+                            html! {
+                                <li>{member}</li>
+                            }
+                        })}
+                    </ul>
+                }
+            },
+        }
+        
     }
 }
