@@ -9,7 +9,8 @@ impl Repository<AppCore> for AppRepository {
         todo!()
     }
 
-    fn start(listener: Box<dyn FnMut(Record<AppCore>)>) -> Self {
+    fn start<L: FnMut(Record<AppCore>)>(listener: L) -> Self {
         Self
     }
+
 }
