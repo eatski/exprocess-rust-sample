@@ -1,4 +1,4 @@
-import * as member from "./js/memberRepository";
+import * as member from "./js/member";
 import * as room from "./js/room";
 
 export function syncMember(roomid:string,fn: (json:string) => void) {
