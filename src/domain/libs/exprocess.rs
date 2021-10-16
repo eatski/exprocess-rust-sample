@@ -17,7 +17,7 @@ pub struct Record<'a,Core: ExprocessCore> {
     pub id: &'a str
 }
 pub trait Repository<Core: ExprocessCore> {
-    fn start<L: FnMut(Record<Core>)>(listener: L) -> Self;
+    fn start(arg:String /* FIXME */, listener: Box<dyn FnMut(Record<Core>)>) -> Self;
     fn push(&mut self,record: &Record<Core>);
 }
 
@@ -40,8 +40,9 @@ fn shared<T>(content:T) -> Shared<T> {
 }
 
 //FIXME: ちゃんとやる
-impl <Core: ExprocessCore,Repo: Repository<Core>> Runner<Core,Repo> {
+impl <Core: ExprocessCore + 'static,Repo: Repository<Core>> Runner<Core,Repo> {
     pub fn start(
+        arg:String,
         listener: Listener<Core>
     ) -> Self {
         let shared = shared(
@@ -52,7 +53,7 @@ impl <Core: ExprocessCore,Repo: Repository<Core>> Runner<Core,Repo> {
             }
         );
         let cloned = shared.clone();
-        let repository = Repo::start( move |record| {
+        let repository = Repo::start( arg,Box::new(move |record| {
             let mut shared = cloned.borrow_mut();
             let found = shared.stack
                 .iter()
@@ -66,7 +67,7 @@ impl <Core: ExprocessCore,Repo: Repository<Core>> Runner<Core,Repo> {
                     shared.state = next;
                 }
             };
-        });
+        }));
         let cloned = shared.clone();
         Self {
             shared:cloned,

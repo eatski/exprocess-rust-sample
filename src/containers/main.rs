@@ -1,10 +1,11 @@
 use yew::prelude::*;
-use crate::domain::{Runner, exprocess::AppState,exprocess::AppCommand};
+use crate::{domain::{Runner, exprocess::AppState,exprocess::AppCommand}, repository::{fetch_members,Member as MemberData}};
 
 pub struct Main {
     runner:Runner,
     state: ViewState,
-    props: Props
+    props: Props,
+    link: ComponentLink<Self>
 }
 
 pub enum ViewState {
@@ -21,12 +22,14 @@ fn app_state_to_view_state(app:&AppState) -> ViewState {
 }
 
 pub enum Msg {
-    UpdateState(ViewState)
+    UpdateState(ViewState),
+    PushCommand(AppCommand)
 } 
 
 #[derive(Clone,Eq,PartialEq,Properties)]
 pub struct Props {
-    pub is_host: bool
+    pub is_host: bool,
+    pub room_id: String
 }
 
 impl Component for Main {
@@ -34,21 +37,23 @@ impl Component for Main {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let link_cloned = link.clone();
         let runner = Runner::start(
-            Box::new(move |_,state| link.send_message(Msg::UpdateState(app_state_to_view_state(state))))
+            props.room_id.clone(),
+            Box::new(move |_,state| link_cloned.send_message(Msg::UpdateState(app_state_to_view_state(state))))
         );
         Main {
             state: ViewState::Blank,
             runner,
-            props
+            props,
+            link
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::UpdateState(state) => {
-                self.state = state;
-            },
+            Msg::UpdateState(state) => self.state = state,
+            Msg::PushCommand(command) => self.runner.dispatch(command),
         };
         true
     }
@@ -59,7 +64,11 @@ impl Component for Main {
 
     fn rendered(&mut self, _first_render: bool) {
         if _first_render && self.props.is_host {
-            self.runner.dispatch(AppCommand::Init(vec![]))
+            let link = self.link.clone();
+            fetch_members(self.props.room_id.as_str(),Box::new(move |members| {
+                let msg = Msg::PushCommand(AppCommand::Init(members.iter().map(|member| String::from(member.name)).collect()));
+                link.send_message(msg);
+            }));
         }
     }
 
@@ -70,13 +79,17 @@ impl Component for Main {
             },
             ViewState::Standby(members) => {
                 html! {
-                    <ul>
-                        {for members.iter().map(|member| {
-                            html! {
-                                <li>{member}</li>
-                            }
-                        })}
-                    </ul>
+                    <section>
+                        <h2>{"Joined Members"}</h2>
+                        <ul>
+                            {for members.iter().map(|member| {
+                                html! {
+                                    <li>{member}</li>
+                                }
+                            })}
+                        </ul>
+                    </section>
+                    
                 }
             },
         }

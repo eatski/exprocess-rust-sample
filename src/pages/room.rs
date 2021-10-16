@@ -52,7 +52,7 @@ impl Component for Room {
                     let start = self.link.callback(|_| Msg::Start);
                     html! {<MeetingHost room_id=self.props.room_id.clone() start=start/>}
                 },
-                Phase::Started => html! {<Main is_host=room.is_host/>},
+                Phase::Started => html! {<Main is_host=room.is_host room_id=self.props.room_id.clone()/>},
             }
             State::NotExists => html! { 
                 <h2> { "404" } </h2>

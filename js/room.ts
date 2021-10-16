@@ -1,4 +1,4 @@
-import { collection,doc,onSnapshot,setDoc } from "@firebase/firestore";
+import { collection,doc,onSnapshot,setDoc,runTransaction } from "@firebase/firestore";
 import { getStore } from "./firestore";
 import { getYourId } from "./yourid";
 
@@ -30,7 +30,6 @@ export const syncRoom = (roomId:string,listener:(roomData:string | null) => void
                 phase: data.data().phase,
                 is_host: data.data().host === yourId
             }) : null
-        console.log(room);
         listener(room);
     })
 }
@@ -39,5 +38,12 @@ export const startRoom = (roomId:string) => {
     const db = getStore();
     const rooms = collection(db,"rooms");
     const room = doc(rooms,roomId);
-    setDoc(room,{phase:"STARTED"});
+    runTransaction(db,async (t) => {
+        const data = await t.get(room);
+        const newData = {
+            ...data.data(),
+            phase:"STARTED"
+        }
+        await t.set(room,newData);
+    })
 }

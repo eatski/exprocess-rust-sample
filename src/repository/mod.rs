@@ -14,20 +14,32 @@ pub fn register_member(room_id: &str,name: &str) {
     js_bridge::register_member(room_id,name)
 }
 
-pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) {
-    let json_callback : Box<dyn Fn(String)>= Box::new(move |json:String| {
-        let members_json : Vec<MemberJSON> = serde_json::from_str(json.as_str()).expect("JSON Parse Error");
-        let members = members_json
+fn json_to_members<'a>(json:&'a String) -> Vec<Member<'a>> {
+    let members_json : Vec<MemberJSON> = serde_json::from_str(json).expect("JSON Parse Error");
+    members_json
             .iter()
             .map(|member| Member {id:member.id,name: member.name, you: member.you})
-            .collect::<Vec<Member>>();
-        callback(members);
-    });
+            .collect::<Vec<Member>>()
+}
+
+pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) {
+    let json_callback : Box<dyn Fn(String)>= Box::new(
+        move |json:String| callback(json_to_members(&json))
+    );
     js_bridge::sync_member(
         room_id, 
         Closure::into_js_value(Closure::wrap(json_callback))
     )
-    
+}
+
+pub fn fetch_members(room_id: &str,callback:Box<dyn FnOnce(Vec<Member>) -> ()>) {
+    let json_callback : Box<dyn FnOnce(String)>= Box::new(
+        move |json:String| callback(json_to_members(&json))
+    );
+    js_bridge::sync_member(
+        room_id, 
+        Closure::into_js_value(Closure::once(json_callback))
+    )
 }
 
 pub struct Member<'a> {
@@ -83,4 +95,28 @@ pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) {
 
 pub fn start_room(room_id: &str) {
     js_bridge::start_room(room_id);
+}
+
+pub fn push_record(room_id: &str,record: RecordIO) {
+    js_bridge::push_record(
+        room_id,
+        record.id.as_str(), 
+        record.command.as_str(), 
+        record.result.as_str()
+    )
+}
+
+pub fn sync_record_update<F: FnMut(RecordIO) + 'static>(room_id: &str,mut listener: F) {
+    let callback = Box::new(move|id,command,result| {
+        listener(RecordIO {
+            id,command,result
+        })
+    });
+    js_bridge::sync_record_update(room_id, callback)
+}
+
+pub struct RecordIO {
+    id: String,
+    command: String,
+    result: String
 }
