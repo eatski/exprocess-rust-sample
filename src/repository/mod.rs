@@ -116,7 +116,7 @@ pub fn sync_record_update<F: FnMut(RecordIO) + 'static>(room_id: &str,mut listen
 }
 
 pub struct RecordIO {
-    id: String,
-    command: String,
-    result: String
+    pub id: String,
+    pub command: String,
+    pub result: String
 }

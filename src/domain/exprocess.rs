@@ -1,4 +1,5 @@
 use super::libs::exprocess::ExprocessCore;
+use serde::{Deserialize, Serialize};
 
 pub enum AppState {
     Blank,
@@ -6,10 +7,17 @@ pub enum AppState {
     Picked
 }
 
+//FIXME ドメインモデルにつけて問題ない？
+#[derive(Serialize, Deserialize)]
+// #[serde(tag = "type")]
 pub enum AppCommand {
     Init(Vec<String>),
     Pick
 }
+
+//FIXME ドメインモデルにつけて問題ない？
+#[derive(Serialize, Deserialize)]
+// #[serde(tag = "type")]
 pub enum AppResult {
     Init(Vec<String>),
     Picked
