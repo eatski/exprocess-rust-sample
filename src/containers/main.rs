@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{domain::{Runner, exprocess::AppState,exprocess::AppCommand}, repository::{fetch_members,Member as MemberData}};
+use crate::{domain::{Runner, start, exprocess::AppState,exprocess::AppCommand}, repository::{fetch_members,Member as MemberData}};
 
 pub struct Main {
     runner:Runner,
@@ -38,7 +38,7 @@ impl Component for Main {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let link_cloned = link.clone();
-        let runner = Runner::start(
+        let runner = start (
             props.room_id.clone(),
             Box::new(move |_,state| link_cloned.send_message(Msg::UpdateState(app_state_to_view_state(state))))
         );
