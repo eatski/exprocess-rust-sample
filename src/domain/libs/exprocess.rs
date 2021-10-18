@@ -66,9 +66,8 @@ impl <Core: ExprocessCore + 'static,Repo: Repository<Core>> Runner<Core,Repo> {
                 }
             };
         }));
-        let cloned = shared.clone();
         Self {
-            shared:cloned,
+            shared,
             repository
         }
     }
@@ -76,16 +75,15 @@ impl <Core: ExprocessCore + 'static,Repo: Repository<Core>> Runner<Core,Repo> {
         let mut shared = self.shared.borrow_mut();
         let result = &Core::resolve(&shared.state, &command);
         let id = Uuid::new_v4().to_hyphenated().to_string();
-        let id2 = id.clone();
         let record = Record {
             id:id.as_str(),
             result,
             command:&command,
         };
         self.repository.push(&record);
-        shared.stack.push(id2);
         let next = Core::reducer(&shared.state,result);
         (shared.listener)(&record,&next);
+        shared.stack.push(id);
         shared.state = next;
     }
 

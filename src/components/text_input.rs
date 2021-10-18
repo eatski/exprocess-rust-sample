@@ -52,7 +52,7 @@ impl Component for Input {
                 _ => panic!("Invalid Type")
             }
         );
-        let onclick= self.link.callback_once(move |_| Msg::Submit);
+        let onclick= self.link.callback_once(|_| Msg::Submit);
         let value = self.value.clone();
         html! {
             <div>
