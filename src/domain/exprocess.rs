@@ -35,7 +35,7 @@ pub enum AppCommand {
 }
 
 #[derive(Serialize, Deserialize)]
-struct PickCommand {
+pub struct PickCommand {
     roles: Vec<(usize,Role)>
 }
 
@@ -47,7 +47,7 @@ pub enum AppResult {
 }
 
 #[derive(Serialize, Deserialize)]
-struct PickResult {
+pub struct PickResult {
     picked: Vec<(usize,Role)>
 }
 
