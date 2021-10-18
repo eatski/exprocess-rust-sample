@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{domain::{Runner, start, exprocess::AppState,exprocess::AppCommand}, repository::{fetch_members}};
+use crate::{domain::{Runner, start, exprocess::AppState,exprocess::AppCommand, exprocess::Member,exprocess::Role}, repository::{fetch_members}};
 
 pub struct Main {
     runner:Runner,
@@ -10,14 +10,19 @@ pub struct Main {
 
 pub enum ViewState {
     Blank,
-    Standby(Vec<String>)
+    Standby { members:Vec<String> },
+    Picked { result: Vec<(Member,Role)>}
 }
 
 fn app_state_to_view_state(app:&AppState) -> ViewState {
     match app {
         AppState::Blank => ViewState::Blank,
-        AppState::Standby(members) => ViewState::Standby(members.clone()),
-        AppState::Picked => todo!(),
+        AppState::Standby(members) => ViewState::Standby { 
+            members:members.iter().map(|m| m.name.clone()).collect()
+        },
+        AppState::Picked(picked) => ViewState::Picked {
+            result: todo!()
+        },
     }
 }
 
@@ -66,7 +71,12 @@ impl Component for Main {
         if _first_render && self.props.is_host {
             let link = self.link.clone();
             fetch_members(self.props.room_id.as_str(),Box::new(move |members| {
-                let msg = Msg::PushCommand(AppCommand::Init(members.iter().map(|member| String::from(member.name)).collect()));
+                let msg = Msg::PushCommand(
+                    AppCommand::Init(members.iter()
+                        .map(|member| Member { name: String::from(member.name),id: String::from(member.id)} )
+                        .collect()
+                    )
+                );
                 link.send_message(msg);
             }));
         }
@@ -77,7 +87,7 @@ impl Component for Main {
             ViewState::Blank => html! {
                 "Started"
             },
-            ViewState::Standby(members) => {
+            ViewState::Standby {members} => {
                 html! {
                     <section>
                         <h2>{"Joined Members"}</h2>
@@ -92,6 +102,7 @@ impl Component for Main {
                     
                 }
             },
+            ViewState::Picked { result } => todo!(),
         }
         
     }
