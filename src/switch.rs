@@ -1,5 +1,5 @@
 use yew::{html::IntoPropValue, web_sys::Url};
-use yew_router::{components::RouterAnchor, prelude::*, switch::Permissive};
+use yew_router::{ prelude::*, switch::Permissive};
 
 #[derive(Clone, Debug, Switch)]
 pub enum AppRoute {
@@ -77,4 +77,3 @@ impl IntoPropValue<PublicUrlSwitch> for AppRoute {
 // type aliases to make life just a bit easier
 
 pub type AppRouter = Router<PublicUrlSwitch>;
-pub type AppAnchor = RouterAnchor<PublicUrlSwitch>;

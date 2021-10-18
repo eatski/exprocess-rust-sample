@@ -21,7 +21,7 @@ pub trait Repository<Core: ExprocessCore> {
     fn sync(&mut self,listener: Box<dyn FnMut(Record<Core>)>);
 }
 
-pub type Listener<Core: ExprocessCore> = Box<dyn FnMut(&Record<Core>,&Core::State)>;
+pub type Listener<Core,State> = Box<dyn FnMut(&Record<Core>,&State)>;
 pub struct Runner<Core: ExprocessCore,Repo: Repository<Core>> {
     repository: Repo,
     shared: Shared<VarsToShare <Core>>
@@ -30,7 +30,7 @@ pub struct Runner<Core: ExprocessCore,Repo: Repository<Core>> {
 struct VarsToShare <Core: ExprocessCore>{
     state: Core::State,
     stack: Vec<String>,
-    listener: Listener<Core>
+    listener: Listener<Core,Core::State>
 }
 
 type Shared<T> = Rc<RefCell<T>>;
@@ -41,7 +41,7 @@ fn shared<T>(content:T) -> Shared<T> { Rc::new(RefCell::new(content))}
 impl <Core: ExprocessCore + 'static,Repo: Repository<Core>> Runner<Core,Repo> {
     pub fn start(
         mut repository:Repo,
-        listener: Listener<Core>
+        listener: Listener<Core,Core::State>
     ) -> Self {
         let shared = shared(
             VarsToShare {

@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{domain::{Runner, start, exprocess::AppState,exprocess::AppCommand}, repository::{fetch_members,Member as MemberData}};
+use crate::{domain::{Runner, start, exprocess::AppState,exprocess::AppCommand}, repository::{fetch_members}};
 
 pub struct Main {
     runner:Runner,

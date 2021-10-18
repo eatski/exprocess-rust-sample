@@ -6,6 +6,6 @@ pub mod repository;
 
 pub type Runner = libs::exprocess::Runner<exprocess::AppCore,repository::AppRepository>;
 
-pub fn start(room_id: String,listener: libs::exprocess::Listener<exprocess::AppCore>) -> Runner {
+pub fn start(room_id: String,listener: libs::exprocess::Listener<exprocess::AppCore,exprocess::AppState>) -> Runner {
     Runner::start(repository::AppRepository::new(room_id) ,listener)
 }
