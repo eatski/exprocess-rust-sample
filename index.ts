@@ -1,6 +1,7 @@
 import * as member from "./js/member";
 import * as room from "./js/room";
-import * as record from "./js/record"; 
+import * as record from "./js/record";
+import {getYourId as getYourIdInner} from "./js/yourid"
 
 export function syncMember(roomid:string,fn: (json:string) => void) {
     member.syncMember(roomid,fn);
@@ -36,3 +37,5 @@ export const pushRecord = (roomId:string,recordId:string,commandJson:string,resu
 export const syncRecordUpdate = (roomId:string,listener: (recordId:string,commandJson:string,resultJson:string) => void) => {
     record.syncRecordUpdate(roomId,listener);
 }
+
+export const getYourId = (roomid: string) => getYourIdInner(roomid) 

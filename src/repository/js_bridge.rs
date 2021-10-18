@@ -25,6 +25,9 @@ extern "C" {
 
     #[wasm_bindgen(js_name = "syncRecordUpdate")]
     fn sync_record_update_bridge(room_id: &str,callback: JsValue);
+
+    #[wasm_bindgen(js_name = "getYourId")]
+    pub fn get_your_id(room_id: &str) -> Option<String>;
 }
 
 

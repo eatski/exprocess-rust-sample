@@ -11,7 +11,7 @@ pub struct Main {
 pub enum ViewState {
     Blank,
     Standby { members:Vec<String> },
-    Picked { result: Vec<(Member,Role)>}
+    Picked (Vec<(Member,Role)>)
 }
 
 fn app_state_to_view_state(app:&AppState) -> ViewState {
@@ -20,9 +20,9 @@ fn app_state_to_view_state(app:&AppState) -> ViewState {
         AppState::Standby(members) => ViewState::Standby { 
             members:members.iter().map(|m| m.name.clone()).collect()
         },
-        AppState::Picked(picked) => ViewState::Picked {
-            result: todo!()
-        },
+        AppState::Picked(picked) => ViewState::Picked (
+            picked.picked.iter().map(|(m,r)| (m.clone(),r.clone())).collect()
+        ),
     }
 }
 
@@ -34,7 +34,8 @@ pub enum Msg {
 #[derive(Clone,Eq,PartialEq,Properties)]
 pub struct Props {
     pub is_host: bool,
-    pub room_id: String
+    pub room_id: String,
+    pub your_id: String
 }
 
 impl Component for Main {
@@ -102,7 +103,18 @@ impl Component for Main {
                     
                 }
             },
-            ViewState::Picked { result } => todo!(),
+            ViewState::Picked ( list ) => {
+                let (you,your_role) = list
+                    .iter()
+                    .find(move |(member,_)| member.id == self.props.your_id)
+                    .expect("No Player Matches");
+                
+                html! {
+                    <section>
+                        <h2>{format!("You({}) is [{}]",you.name,your_role.name)}</h2>
+                    </section>
+                }
+            },
         }
         
     }

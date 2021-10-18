@@ -120,3 +120,7 @@ pub struct RecordIO {
     pub command: String,
     pub result: String
 }
+
+pub fn get_your_id(room_id: &str) -> Option<String> {
+    js_bridge::get_your_id(room_id)
+}

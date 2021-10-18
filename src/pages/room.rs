@@ -1,16 +1,18 @@
 use yew::prelude::*;
-use crate::components::loading::loading;
+use crate::components::{loading::loading,not_found::not_found};
 use crate::containers::main::Main;
-use crate::repository::{sync_room,Room as RoomData,Phase,start_room};
+use crate::repository::{sync_room,Room as RoomData,Phase,start_room,get_your_id};
 use crate::containers::meeting::{Meeting,MeetingHost};
 pub struct Room {
     state: State,
     props: Props,
     link: ComponentLink<Self>
 }
+
+type YourId = Option<String>;
 enum State {
     Loading,
-    Fetched(RoomData),
+    Fetched(RoomData,YourId),
     NotExists
 }
 
@@ -31,7 +33,7 @@ impl Component for Room {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::UpdateRoom(room) => self.state = State::Fetched(room),
+            Msg::UpdateRoom(room) => self.state = State::Fetched(room,get_your_id(self.props.room_id.as_str())),
             Msg::RoomNotExists => self.state = State::NotExists,
             Msg::Start => start_room(&self.props.room_id)
         };
@@ -45,18 +47,27 @@ impl Component for Room {
     fn view(&self) -> Html {
         let content = match &self.state {
             State::Loading => loading(),
-            State::Fetched(room) => match room.phase {
+            State::Fetched(room,your_id) => match room.phase {
                 Phase::Meeting =>  if !room.is_host {
                     html! {<Meeting room_id=self.props.room_id.clone()/>}
                 } else {
                     let start = self.link.callback(|_| Msg::Start);
                     html! {<MeetingHost room_id=self.props.room_id.clone() start=start/>}
                 },
-                Phase::Started => html! {<Main is_host=room.is_host room_id=self.props.room_id.clone()/>},
+                Phase::Started => match your_id {
+                    Some(your_id) => html! {
+                        <Main 
+                            is_host=room.is_host 
+                            room_id=self.props.room_id.clone()
+                            your_id=your_id.clone()
+                        />
+                    },
+                    None => not_found(),
+                }
+                
+                
             }
-            State::NotExists => html! { 
-                <h2> { "404" } </h2>
-            },
+            State::NotExists => not_found(),
         };
         html! {
             <section>
@@ -66,7 +77,9 @@ impl Component for Room {
     }
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let room_id = props.room_id.as_str();
-        let callback = link.callback(|room : Option<RoomData>| room.map_or(Msg::RoomNotExists, Msg::UpdateRoom));
+        let callback = link.callback(
+             |room : Option<RoomData>| room.map_or(Msg::RoomNotExists, Msg::UpdateRoom)
+        );
         //FIXME: unsync
         sync_room(
             room_id, 
