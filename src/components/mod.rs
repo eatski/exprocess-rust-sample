@@ -1,2 +1,2 @@
-pub mod join_form;
+pub mod text_input;
 pub mod loading;

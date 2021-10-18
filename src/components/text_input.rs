@@ -15,7 +15,7 @@ pub struct Props {
 
 pub enum Msg {
     Change(String),
-    Submit(String)
+    Submit
 }
 
 impl Component for Input {
@@ -33,9 +33,9 @@ impl Component for Input {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::Change(value) => self.value = value,
-            Msg::Submit(value) => {
+            Msg::Submit => {
+                self.props.on_submit.emit(self.value.clone());
                 self.value = String::from("");
-                self.props.on_submit.emit(value)
             }
         }
         true
@@ -52,13 +52,12 @@ impl Component for Input {
                 _ => panic!("Invalid Type")
             }
         );
-        let value = self.value.clone();
-        let onclick= self.link.callback_once(move |_| Msg::Submit(value));
+        let onclick= self.link.callback_once(move |_| Msg::Submit);
         let value = self.value.clone();
         html! {
             <div>
                 <input value=value onchange=onchange/>
-                <button onclick=onclick>{"Join"}</button>
+                <button onclick=onclick>{&self.props.button}</button>
             </div>
         }
     }

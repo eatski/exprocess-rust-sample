@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew_router::{agent::RouteRequest, prelude::*};
 use crate::repository::{create_room};
-use crate::components::join_form::{Input};
+use crate::components::text_input::{Input};
 
 use crate::switch::AppRoute;
 

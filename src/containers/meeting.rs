@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use yew::virtual_dom::VNode;
-use crate::components::join_form::Input;
+use crate::components::text_input::Input;
 
 use crate::components::loading::loading;
 use crate::repository::{register_member,sync_members};
