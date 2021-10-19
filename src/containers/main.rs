@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{domain::{Runner, start, exprocess::AppState,exprocess::AppCommand, exprocess::Member,exprocess::Role}, repository::{fetch_members}};
+use crate::{containers::host_form::HostForm, domain::{Runner, start, exprocess::AppState,exprocess::AppCommand,exprocess::PickCommand, exprocess::Member,exprocess::Role}, repository::{fetch_members}};
 
 pub struct Main {
     runner:Runner,
@@ -10,15 +10,26 @@ pub struct Main {
 
 pub enum ViewState {
     Blank,
-    Standby { members:Vec<String> },
+    Standby { 
+        members:Vec<String>,
+        host_form: Option<Callback<PickCommand>>
+    },
     Picked (Vec<(Member,Role)>)
 }
 
-fn app_state_to_view_state(app:&AppState) -> ViewState {
+
+fn app_state_to_view_state(app:&AppState,is_host: bool, link: &ComponentLink<Main>) -> ViewState {
     match app {
         AppState::Blank => ViewState::Blank,
         AppState::Standby(members) => ViewState::Standby { 
-            members:members.iter().map(|m| m.name.clone()).collect()
+            members:members.iter().map(|m| m.name.clone()).collect(),
+            host_form: if is_host { 
+                Option::Some(
+                    link.callback(|command| Msg::PushCommand(AppCommand::Pick(command)))
+                ) 
+            } else { 
+                Option::None 
+            }
         },
         AppState::Picked(picked) => ViewState::Picked (
             picked.picked.iter().map(|(m,r)| (m.clone(),r.clone())).collect()
@@ -44,9 +55,13 @@ impl Component for Main {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let link_cloned = link.clone();
+        let is_host = props.is_host;
         let runner = start (
             props.room_id.clone(),
-            Box::new(move |_,state| link_cloned.send_message(Msg::UpdateState(app_state_to_view_state(state))))
+            Box::new(move |_,state| {
+                let state = app_state_to_view_state(state,is_host,&link_cloned);
+                link_cloned.send_message(Msg::UpdateState(state))
+            })
         );
         Main {
             state: ViewState::Blank,
@@ -88,18 +103,32 @@ impl Component for Main {
             ViewState::Blank => html! {
                 "Started"
             },
-            ViewState::Standby {members} => {
+            ViewState::Standby {members, host_form} => {
+                let host_form_view = match host_form {
+                    Some(on_submit) => html! {
+                        <section>
+                            <h2>{"Roles"}</h2>
+                            <HostForm on_submit=on_submit members_num=members.len()/> 
+                        </section>
+                    },
+                    None => html! {},
+                };
                 html! {
-                    <section>
-                        <h2>{"Joined Members"}</h2>
-                        <ul>
-                            {for members.iter().map(|member| {
-                                html! {
-                                    <li>{member}</li>
-                                }
-                            })}
-                        </ul>
-                    </section>
+                    <>
+                        <section>
+                            <h2>{"Joined Members"}</h2>
+                            <ul>
+                                {for members.iter().map(|member| {
+                                    html! {
+                                        <li>{member}</li>
+                                    }
+                                })}
+                            </ul>
+                            
+                        </section>
+                        {host_form_view}
+                    </>
+                    
                     
                 }
             },

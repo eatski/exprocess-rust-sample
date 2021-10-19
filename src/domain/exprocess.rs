@@ -36,7 +36,7 @@ pub enum AppCommand {
 
 #[derive(Serialize, Deserialize)]
 pub struct PickCommand {
-    roles: Vec<(usize,Role)>
+    pub roles: Vec<(usize,Role)>
 }
 
 //FIXME ドメインモデルにつけて問題ない？
