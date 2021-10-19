@@ -107,7 +107,7 @@ fn pick_roles_to_members(members: &Vec<Member>,pick: &PickCommand) -> PickResult
         .map(|r| r.clone())
         .collect();
     shuffule(&mut roles);
-    let picked = (0..(members.len() - 1))
+    let picked = (0..(members.len()))
         .map (move |index| {
             let role = roles
                 .get(index)
