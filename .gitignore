@@ -12,3 +12,4 @@
 
 #firebase
 /.firebase/
+*.log

@@ -12,5 +12,14 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "emulators": {
+    "firestore": {
+      "port": 3000
+    },
+    "ui": {
+      "enabled": true,
+      "port": 3001
+    }
   }
 }

@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npm run watch & npm run emu & trunk serve",
     "build": "esbuild index.ts --bundle --minify --outfile=build/index.js --format=esm",
-    "dev": "esbuild index.ts --bundle --outfile=build/index.js --format=esm --watch"
+    "watch": "esbuild index.dev.ts --bundle --outfile=build/index.js --format=esm --watch",
+    "emu": "firebase emulators:start"
   },
   "repository": {
     "type": "git",
