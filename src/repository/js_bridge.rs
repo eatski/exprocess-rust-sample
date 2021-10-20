@@ -30,13 +30,12 @@ extern "C" {
     pub fn get_your_id(room_id: &str) -> Option<String>;
 }
 
-
 pub fn sync_room(room_id: &str,callback: Box<dyn Fn(Option<String>)>) {
     let callback = Closure::into_js_value(Closure::wrap(callback));
     sync_room_bridge(room_id,callback);
 }
 
-pub fn sync_record_update(room_id: &str, callback: Box<dyn FnMut(String,String,String)>) {
+pub fn sync_record_update(room_id: &str, callback: Box<dyn FnMut(String)>) {
     let callback = Closure::into_js_value(Closure::wrap(callback));
     sync_record_update_bridge(room_id,callback);
 }

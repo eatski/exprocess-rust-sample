@@ -13,18 +13,23 @@ export const pushRecord = (roomId:string,recordId:string,commandJson:string,resu
     })
 }
 
-export const syncRecordUpdate = (roomId:string,listener: (recordId:string,commandJson:string,resultJson:string) => void) => {
+export const syncRecordUpdate = (roomId:string,listener: (recordsJson:string) => void) => {
     const db = getStore();
     const rooms = collection(db,"rooms");
     const room = doc(rooms,roomId);
     const records = collection(room,"records");
     onSnapshot(records,(snapshot) => {
-        snapshot
+        const recordsObj = snapshot
             .docChanges()
             .filter(change => change.type === "added")
-            .forEach(change => {
+            .map(change => {
                 const data = change.doc.data();
-                listener(data.id,data.command,data.result);
-            })
+                return {
+                    id: data.id,
+                    command: JSON.parse(data.command),
+                    result: JSON.parse(data.result)
+                }
+            });
+        listener(JSON.stringify(recordsObj));
     })
 }
