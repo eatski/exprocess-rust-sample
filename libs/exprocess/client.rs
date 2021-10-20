@@ -3,14 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use uuid::Uuid;
 
-pub trait ExprocessCore {
-    type State;
-    type Command;
-    type Result;
-    fn init() -> Self::State;
-    fn resolve(prev: &Self::State, command: &Self::Command) -> Self::Result;
-    fn reducer(prev: &Self::State, result: &Self::Result) -> Self::State;
-}
+use crate::core::ExprocessCore;
 pub struct RecordSync<'a,Core: ExprocessCore> {
     pub command: &'a Core::Command,
     pub result: &'a Core::Result,

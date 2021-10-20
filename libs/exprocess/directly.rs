@@ -1,6 +1,8 @@
 use std::{cell::{RefCell, RefMut}, collections::HashSet, rc::Rc};
 
-use super::client::{ExprocessCore, Record, RecordSync, Repository};
+use crate::core::ExprocessCore;
+
+use super::client::{Record, RecordSync, Repository};
 pub struct DirectlyDispatch<Core: ExprocessCore,Inner: Repository<Core>> {
     inner: Inner,
     listener: Shared<Box<dyn FnMut(Vec<RecordSync<Core>>)>>,

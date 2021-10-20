@@ -1,4 +1,4 @@
-use exprocess::client::ExprocessCore;
+use exprocess::core::ExprocessCore;
 use rand::prelude::SliceRandom;
 use serde::{Deserialize, Serialize};
 
