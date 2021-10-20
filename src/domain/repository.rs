@@ -1,7 +1,7 @@
 use crate::repository::{RecordIO, push_record, sync_record_update};
 use serde_json::{self};
 
-use super::libs::exprocess::{Repository,Record};
+use expro::exprocess::{Repository,Record};
 use super::exprocess::{AppCore};
 
 pub struct AppRepository {

@@ -88,6 +88,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "expro"
+version = "0.1.0"
+dependencies = [
+ "uuid",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -395,6 +402,7 @@ dependencies = [
 name = "router"
 version = "0.1.0"
 dependencies = [
+ "expro",
  "getrandom 0.2.3",
  "instant",
  "lipsum",
@@ -402,7 +410,6 @@ dependencies = [
  "rand 0.8.4",
  "serde",
  "serde_json",
- "uuid",
  "wasm-bindgen",
  "wasm-logger",
  "yew",
