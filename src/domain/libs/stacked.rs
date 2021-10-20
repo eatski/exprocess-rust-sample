@@ -3,29 +3,35 @@ use std::{cell::{RefCell, RefMut}, collections::HashSet, rc::Rc};
 use super::exprocess::{ExprocessCore, Record, RecordSync, Repository};
 pub struct DirectlyDispatch<Core: ExprocessCore,Inner: Repository<Core>> {
     inner: Inner,
-    listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>,
+    listener: Shared<Box<dyn FnMut(Vec<RecordSync<Core>>)>>,
     used_id: SharedUsedId
 }
 
-type SharedUsedId = Rc<RefCell<HashSet<String>>>;
+type Shared<T> = Rc<RefCell<T>>;
+
+type SharedUsedId = Shared<HashSet<String>>;
 
 impl <Core: ExprocessCore + 'static,Inner: Repository<Core>> Repository<Core> for DirectlyDispatch<Core,Inner> {
 
     fn push(&mut self,record: Record<Core>) {
-        let records = vec![RecordSync {id: record.id.as_str(),command: &record.command, result: &record.result}];
-        (self.listener)(records);
+        let records = 
+            vec![RecordSync {id: record.id.as_str(),command: &record.command, result: &record.result}];
+        (self.listener.borrow_mut())(records);
         self.used_id.borrow_mut().insert(record.id.clone());
         self.inner.push(record);
     }
 
-    fn sync(&mut self,mut listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>) {
+    fn sync(&mut self,listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>) {
         let used_id = self.used_id.clone();
-        self.listener = 
-            Box::new(move |records| {
-                let used_id = used_id.borrow_mut();
-                let records = limit_records(records, used_id);
-                listener(records);
-        });
+        let shared_listener = shared(listener);
+        let listener = shared_listener.clone();
+        self.inner.sync(Box::new(move |records| {
+            let mut listener = listener.borrow_mut();
+            let used_id = used_id.borrow_mut();
+            let records = limit_records(records, used_id);
+            listener(records);
+        }));
+        self.listener = shared_listener;
     }
 }
 
@@ -33,7 +39,7 @@ impl <Core: ExprocessCore,Inner: Repository<Core>> DirectlyDispatch<Core,Inner> 
     pub fn wrap(inner: Inner) -> Self {
         Self {
             inner,
-            listener: Box::new(|_|panic!("No Listener")),
+            listener: shared(Box::new(|_|panic!("No Listener"))),
             used_id: shared(HashSet::new())
         }
     }
