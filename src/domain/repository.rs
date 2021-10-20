@@ -2,8 +2,8 @@ use crate::repository::{push_record, RecordPushIO, sync_record_update};
 use serde_json::{self};
 use serde::{Deserialize};
 
-use expro::exprocess::{Record, RecordSync, Repository};
-use super::exprocess::{AppCommand, AppCore, AppResult};
+use exprocess::client::{Record, RecordSync, Repository};
+use super::state::{AppCommand, AppCore, AppResult};
 
 pub struct AppRepository {
     room_id: String

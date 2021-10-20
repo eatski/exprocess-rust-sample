@@ -2,7 +2,7 @@ use std::{ops::Add, vec};
 
 use yew::{prelude::*, virtual_dom::VNode};
 
-use crate::domain::exprocess::{PickCommand,Role};
+use crate::domain::state::{PickCommand,Role};
 
 pub struct HostForm {
     pub props: Props,

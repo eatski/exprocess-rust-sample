@@ -88,7 +88,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "expro"
+name = "exprocess"
 version = "0.1.0"
 dependencies = [
  "uuid",
@@ -402,7 +402,7 @@ dependencies = [
 name = "router"
 version = "0.1.0"
 dependencies = [
- "expro",
+ "exprocess",
  "getrandom 0.2.3",
  "instant",
  "lipsum",
