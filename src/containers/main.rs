@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{containers::host_form::HostForm, domain::{Runner, start, state::AppState,state::AppCommand,state::PickCommand, state::Member,state::Role}, repository::{fetch_members}};
+use crate::{components::loading::loading, containers::host_form::HostForm, domain::{Runner, start, state::AppState,state::AppCommand,state::PickCommand, state::Member,state::Role}, repository::{fetch_members}};
 
 pub struct Main {
     runner:Runner,
@@ -9,6 +9,7 @@ pub struct Main {
 }
 
 pub enum ViewState {
+    Loading,
     Blank,
     Standby { 
         members:Vec<String>,
@@ -73,7 +74,21 @@ impl Component for Main {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::UpdateState(state) => self.state = state,
+            Msg::UpdateState(state) => { 
+                if matches!(state,ViewState::Blank) && self.props.is_host {
+                    let link = self.link.clone();
+                    fetch_members(self.props.room_id.as_str(),Box::new(move |members| {
+                        let msg = Msg::PushCommand(
+                            AppCommand::Init(members.iter()
+                                .map(|member| Member { name: String::from(member.name),id: String::from(member.id)} )
+                                .collect()
+                            )
+                        );
+                        link.send_message(msg);
+                    }));
+                }
+                self.state = state
+            },
             Msg::PushCommand(command) => self.runner.dispatch(command),
         };
         true
@@ -81,21 +96,6 @@ impl Component for Main {
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
         panic!()
-    }
-
-    fn rendered(&mut self, _first_render: bool) {
-        if _first_render && self.props.is_host {
-            let link = self.link.clone();
-            fetch_members(self.props.room_id.as_str(),Box::new(move |members| {
-                let msg = Msg::PushCommand(
-                    AppCommand::Init(members.iter()
-                        .map(|member| Member { name: String::from(member.name),id: String::from(member.id)} )
-                        .collect()
-                    )
-                );
-                link.send_message(msg);
-            }));
-        }
     }
 
     fn view(&self) -> Html {
@@ -144,6 +144,7 @@ impl Component for Main {
                     </section>
                 }
             },
+            ViewState::Loading => loading(),
         }
         
     }
