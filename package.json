@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npm run watch & npm run emu & trunk serve",
+    "dev": "npm run emu & trunk serve",
     "build": "esbuild index.ts --bundle --minify --outfile=build/index.js --format=esm",
     "watch": "esbuild index.dev.ts --bundle --outfile=build/index.js --format=esm --watch",
     "emu": "firebase emulators:start"

@@ -97,28 +97,18 @@ pub fn start_room(room_id: &str) {
     js_bridge::start_room(room_id);
 }
 
-pub fn push_record(room_id: &str,record: RecordIO) {
-    js_bridge::push_record(
-        room_id,
-        record.id.as_str(), 
-        record.command.as_str(), 
-        record.result.as_str()
-    )
+pub struct RecordPushIO<'a> {
+    pub id: &'a str,
+    pub command: &'a str,
+    pub result: &'a str
 }
 
-pub fn sync_record_update<F: FnMut(RecordIO) + 'static>(room_id: &str,mut listener: F) {
-    let callback = Box::new(move|id,command,result| {
-        listener(RecordIO {
-            id,command,result
-        })
-    });
-    js_bridge::sync_record_update(room_id, callback)
+pub fn push_record(room_id: &str,record: RecordPushIO) {
+    js_bridge::push_record(room_id,record.id,record.command,record.result)
 }
 
-pub struct RecordIO {
-    pub id: String,
-    pub command: String,
-    pub result: String
+pub fn sync_record_update<F: FnMut(String) + 'static>(room_id: &str,listener: F) {
+    js_bridge::sync_record_update(room_id, Box::new(listener))
 }
 
 pub fn get_your_id(room_id: &str) -> Option<String> {
