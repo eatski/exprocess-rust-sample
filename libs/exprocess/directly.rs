@@ -73,9 +73,10 @@ impl ExprocessCore for TestCore {
         todo!()
     }
 
-    fn reducer(_prev: &Self::State, _result: &Self::Result) -> Self::State {
+    fn reducer(prev: &mut Self::State, result: &Self::Result) {
         todo!()
     }
+
 }
 
 fn _test_limit_records() {

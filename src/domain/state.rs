@@ -17,7 +17,11 @@ pub struct Role {
 }
 
 
-pub enum AppState {
+pub struct AppState {
+    pub content: AppStateContent
+}
+
+pub enum AppStateContent {
     Blank,
     Standby(Vec<Member>),
     Picked(PickedState)
@@ -58,28 +62,30 @@ impl ExprocessCore for AppCore {
     type Result = AppResult;
 
     fn init() -> Self::State {
-        AppState::Blank
+        AppState {
+            content: AppStateContent::Blank
+        }
     }
 
     fn resolve(prev: &Self::State,command: &Self::Command) -> Self::Result {
         match command {
             AppCommand::Init(members) => AppResult::Init(members.clone()),
             AppCommand::Pick(pick) => {
-                match prev {
-                    AppState::Standby(members) => AppResult::Picked(pick_roles_to_members(members,pick)),
+                match &prev.content {
+                    AppStateContent::Standby(members) => AppResult::Picked(pick_roles_to_members(&members,pick)),
                     _ => panic!(),
                 }
             },
         }
     }
 
-    fn reducer(prev: &Self::State, result: &Self::Result) -> Self::State {
-        match result {
-            AppResult::Init(members) => AppState::Standby(members.clone()),
+    fn reducer(prev: &mut Self::State, result: &Self::Result) {
+        prev.content = match result {
+            AppResult::Init(members) => AppStateContent::Standby(members.clone()),
             AppResult::Picked(result) => {
-                match prev {
-                    AppState::Standby(members) => {
-                        AppState::Picked(PickedState {
+                match &prev.content {
+                    AppStateContent::Standby(members) => {
+                        AppStateContent::Picked(PickedState {
                             picked: result.picked.iter().map(move |(index,role)| {
                                 let index = *index;
                                 let member = members.get(index).expect("Never");
@@ -87,7 +93,7 @@ impl ExprocessCore for AppCore {
                             }).collect()
                         })
                     },
-                    _ => panic!(),
+                    _ => todo!(),
                 }
             }
         }

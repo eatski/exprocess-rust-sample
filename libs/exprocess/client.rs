@@ -45,7 +45,7 @@ impl <Core: ExprocessCore + 'static> Runner<Core> {
         repository.sync(Box::new(move |records| {
             let mut shared = cloned.borrow_mut();
             for record in records.iter() {
-                shared.state =  Core::reducer(&shared.state ,record.result);
+                Core::reducer(&mut shared.state ,record.result);
             }
             (listener)(records,&shared.state);
         }));
