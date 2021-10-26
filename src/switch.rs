@@ -1,4 +1,4 @@
-use yew::{html::IntoPropValue, web_sys::Url};
+use yew::{html::IntoPropValue};
 use yew_router::{ prelude::*, switch::Permissive};
 
 #[derive(Clone, Debug, Switch)]
@@ -26,29 +26,15 @@ impl AppRoute {
 #[derive(Clone, Debug)]
 pub struct PublicUrlSwitch(AppRoute);
 impl PublicUrlSwitch {
-    fn base_url() -> Url {
-        if let Ok(Some(href)) = yew::utils::document().base_uri() {
-            // since this always returns an absolute URL we turn it into `Url`
-            // so we can more easily get the path.
-            Url::new(&href).unwrap()
-        } else {
-            Url::new("/").unwrap()
-        }
-    }
 
     fn base_path() -> String {
-        let mut path = Self::base_url().pathname();
-        if path.ends_with('/') {
-            // pop the trailing slash because AppRoute already accounts for it
-            path.pop();
-        }
-
-        path
+        String::from("")
     }
 
     pub fn route(self) -> AppRoute {
         self.0
     }
+
 }
 impl Switch for PublicUrlSwitch {
     fn from_route_part<STATE>(part: String, state: Option<STATE>) -> (Option<Self>, Option<STATE>) {
