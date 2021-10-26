@@ -3,12 +3,10 @@ use yew_router::{ prelude::*, switch::Permissive};
 
 #[derive(Clone, Debug, Switch)]
 pub enum AppRoute {
-    #[to = "/{id}"]
-    Room(String),
-    #[to = "/page-not-found"]
-    PageNotFound(Permissive<String>),
     #[to = "/!"]
     Home,
+    #[to = "/{*:id}"]
+    Room(String),
 }
 impl AppRoute {
     pub fn into_public(self) -> PublicUrlSwitch {

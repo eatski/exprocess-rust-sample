@@ -1,5 +1,4 @@
 use yew::prelude::*;
-use yew_router::{route::Route, switch::Permissive};
 use wasm_bindgen::prelude::*;
 
 mod repository;
@@ -8,10 +7,11 @@ mod containers;
 mod domain;
 mod pages;
 use pages::{
-    home::Home, page_not_found::PageNotFound,room::Room,
+    home::Home,room::Room,
 };
 mod switch;
 use switch::{AppRoute, AppRouter, PublicUrlSwitch};
+use yew_router::prelude::Route;
 
 pub enum Msg {
     ToggleNavbar,
@@ -48,9 +48,7 @@ impl Component for Model {
             <main>
                 <AppRouter
                     render=AppRouter::render(Self::switch)
-                    redirect=AppRouter::redirect(|route: Route| {
-                        AppRoute::PageNotFound(Permissive(Some(route.route))).into_public()
-                    })
+                    redirect=AppRouter::redirect(|_| panic!())
                 />
             </main>
         }
@@ -61,9 +59,6 @@ impl Model {
         match switch.route() {
             AppRoute::Home => {
                 html! { <Home /> }
-            }
-            AppRoute::PageNotFound(Permissive(route)) => {
-                html! { <PageNotFound route=route /> }
             }
             AppRoute::Room(room_id) => {
                 html! { <Room room_id=room_id/> }
