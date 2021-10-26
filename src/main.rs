@@ -1,5 +1,6 @@
 use yew::prelude::*;
 use yew_router::{route::Route, switch::Permissive};
+use wasm_bindgen::prelude::*;
 
 mod repository;
 mod components;
@@ -71,7 +72,8 @@ impl Model {
     }
 }
 
-fn main() {
+#[wasm_bindgen]
+pub fn main() {
     wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
     yew::start_app::<Model>();
 }

@@ -20,6 +20,9 @@
     "ui": {
       "enabled": true,
       "port": 3001
+    },
+    "hosting": {
+      "port": 5000
     }
   }
 }
