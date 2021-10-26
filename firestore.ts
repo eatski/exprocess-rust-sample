@@ -2,6 +2,14 @@ import * as member from "./js/member";
 import * as room from "./js/room";
 import * as record from "./js/record";
 import {getYourId as getYourIdInner} from "./js/yourid";
+import { connectFirestoreEmulator } from "firebase/firestore";
+import { getStore } from "./js/firestore";
+if(process.env.BUILD_MODE === "dev"){
+    console.log("This is devmode!");
+    const db = getStore();
+    connectFirestoreEmulator(db,"localhost",3000);
+}
+
 export function syncMember(roomid:string,fn: (json:string) => void) {
     member.syncMember(roomid,fn);
 }

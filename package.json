@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "wasm-pack build && webpack",
-    "dev": "webpack serve",
-    "emu": "firebase emulators:start"
+    "build": "npm run wasm && webpack",
+    "dev": "BUILD_MODE=dev webpack serve & npm run firestore",
+    "firestore": "firebase emulators:start --only firestore",
+    "wasm": "wasm-pack build",
+    "hosting": "firebase emulators:start --only hosting"
   },
   "repository": {
     "type": "git",
