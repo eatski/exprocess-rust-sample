@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npm run emu & trunk serve",
-    "build": "esbuild index.ts --bundle --minify --outfile=build/index.js --format=esm",
-    "watch": "esbuild index.dev.ts --bundle --outfile=build/index.js --format=esm --watch",
+    "build": "webpack",
+    "dev": "webpack serve",
+    "build-firestore": "esbuild firestore.ts --bundle --minify --outfile=build/index.js --format=esm",
     "emu": "firebase emulators:start"
   },
   "repository": {
@@ -25,5 +25,12 @@
     "firebase": "^9.1.2",
     "firebase-tools": "^9.20.0",
     "typescript": "^4.4.3"
+  },
+  "devDependencies": {
+    "esbuild-loader": "^2.16.0",
+    "html-webpack-plugin": "^5.5.0",
+    "webpack": "^5.60.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.3.1"
   }
 }

@@ -3,6 +3,10 @@ name = "router"
 version = "0.1.0"
 edition = "2018"
 
+[lib]
+crate-type = ["cdylib","lib"]
+path = "src/main.rs"
+
 [dependencies]
 instant = { version = "0.1", features = ["wasm-bindgen"] }
 lipsum = "0.7"
