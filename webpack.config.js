@@ -17,8 +17,14 @@ module.exports = {
         test: [/\.js$/, /\.ts$/],
         exclude: /node_modules/,
         loader: "esbuild-loader",
+        options: {
+            loader: 'ts',
+        }
       }
     ],
+  },
+  resolve: {
+    extensions: [".js", ".jsx", ".ts", ".tsx"],
   },
   experiments: {
     asyncWebAssembly: true,

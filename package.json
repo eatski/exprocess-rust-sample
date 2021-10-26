@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
+    "build": "wasm-pack build && webpack",
     "dev": "webpack serve",
-    "build-firestore": "esbuild firestore.ts --bundle --minify --outfile=build/index.js --format=esm",
     "emu": "firebase emulators:start"
   },
   "repository": {

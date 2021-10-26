@@ -1,32 +1,32 @@
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen(module = "/build/index.js")]
+#[wasm_bindgen()]
 extern "C" {
-    #[wasm_bindgen(js_name = "registerMember")]
+    #[wasm_bindgen(js_name = "registerMember",js_namespace = ["window","_wasm_js_bridge"])]
     pub fn register_member(room_id: &str,name: &str);
 
-    #[wasm_bindgen(js_name = "syncMember")]
+    #[wasm_bindgen(js_name = "syncMember",js_namespace = ["window","_wasm_js_bridge"])]
     pub fn sync_member(room_id: &str,callback: JsValue);
 
-    #[wasm_bindgen(js_name = "fetchMembers")]
+    #[wasm_bindgen(js_name = "fetchMembers",js_namespace = ["window","_wasm_js_bridge"])]
     pub fn fetch_members(room_id: &str,callback: JsValue);
 
-    #[wasm_bindgen(js_name = "createRoom")]
+    #[wasm_bindgen(js_name = "createRoom",js_namespace = ["window","_wasm_js_bridge"])]
     pub fn create_room(hostName:&str,callback: JsValue);
 
-    #[wasm_bindgen(js_name = "syncRoom")]
+    #[wasm_bindgen(js_name = "syncRoom",js_namespace = ["window","_wasm_js_bridge"])]
     fn sync_room_bridge(room_id: &str,callback: JsValue);
 
-    #[wasm_bindgen(js_name = "startRoom")]
+    #[wasm_bindgen(js_name = "startRoom",js_namespace = ["window","_wasm_js_bridge"])]
     pub fn start_room(room_id: &str);
 
-    #[wasm_bindgen(js_name = "pushRecord")]
+    #[wasm_bindgen(js_name = "pushRecord",js_namespace = ["window","_wasm_js_bridge"])]
     pub fn push_record(room_id: &str,record_id: &str, command: &str, result: &str);
 
-    #[wasm_bindgen(js_name = "syncRecordUpdate")]
+    #[wasm_bindgen(js_name = "syncRecordUpdate",js_namespace = ["window","_wasm_js_bridge"])]
     fn sync_record_update_bridge(room_id: &str,callback: JsValue);
 
-    #[wasm_bindgen(js_name = "getYourId")]
+    #[wasm_bindgen(js_name = "getYourId",js_namespace = ["window","_wasm_js_bridge"])]
     pub fn get_your_id(room_id: &str) -> Option<String>;
 }
 
