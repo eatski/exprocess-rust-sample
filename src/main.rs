@@ -11,7 +11,6 @@ use pages::{
 };
 mod switch;
 use switch::{AppRoute, AppRouter, PublicUrlSwitch};
-use yew_router::prelude::Route;
 
 pub enum Msg {
     ToggleNavbar,
