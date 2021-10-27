@@ -6,15 +6,21 @@ use exprocess::client::{Record, RecordSync, Repository};
 use super::state::{AppCommand, AppCore, AppResult};
 
 pub struct AppRepository {
-    room_id: String
+    room_id: String,
+    unsync_fn: Box<dyn FnMut()>
 }
 
 impl AppRepository {
     pub fn new(room_id: String) -> Self {
         Self {
-            room_id
+            room_id,
+            unsync_fn: noop()
         }
     }
+}
+
+fn noop() -> Box<dyn FnMut()>{
+    Box::new(|| {})
 }
 
 #[derive(Deserialize)]
@@ -38,7 +44,7 @@ impl Repository<AppCore> for AppRepository {
     }
 
     fn sync(&mut self,mut listener: Box<dyn FnMut(Vec<RecordSync<AppCore>>)>) {
-        sync_record_update(self.room_id.as_str(), move |json| {
+        self.unsync_fn = sync_record_update(self.room_id.as_str(), move |json| {
             let records : Vec<RecordDesirailizeIO> = serde_json::from_str(&json).expect("JSON Parse Err");
             listener(
                 records.iter()
@@ -46,6 +52,11 @@ impl Repository<AppCore> for AppRepository {
                 .collect()
             );
         });
+    }
+
+    fn unsync(&mut self) {
+        (self.unsync_fn)();
+        self.unsync_fn = noop();
     }
 }
 

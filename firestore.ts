@@ -10,8 +10,8 @@ if(process.env.BUILD_MODE === "dev"){
     connectFirestoreEmulator(db,"localhost",3000);
 }
 
-export function syncMember(roomid:string,fn: (json:string) => void) {
-    member.syncMember(roomid,fn);
+export function syncMember(roomid:string,fn: (json:string) => void) : () => void {
+    return member.syncMember(roomid,fn);
 }
 
 export function registerMember(roomid:string,name:string) {
@@ -29,8 +29,8 @@ export async function createRoom(hostUserName:string,callback:(roomId:string) =>
     callback(roomId);
 }
 
-export function syncRoom(roomId:string,callback:(id:string | null) => void) {
-    room.syncRoom(roomId,callback)
+export function syncRoom(roomId:string,callback:(id:string | null) => void) : () => void {
+    return room.syncRoom(roomId,callback)
 }
 
 export function startRoom(roomId:string) {
@@ -41,8 +41,8 @@ export const pushRecord = (roomId:string,recordId:string,commandJson:string,resu
     record.pushRecord(roomId,recordId,commandJson,resultJson);
 }
 
-export const syncRecordUpdate = (roomId:string,listener: (json:string) => void) => {
-    record.syncRecordUpdate(roomId,listener);
+export const syncRecordUpdate = (roomId:string,listener: (json:string) => void) : () => void => {
+    return record.syncRecordUpdate(roomId,listener);
 }
 
 export const getYourId = (roomid: string) => getYourIdInner(roomid) 

@@ -6,7 +6,8 @@ use crate::containers::meeting::{Meeting,MeetingHost};
 pub struct Room {
     state: State,
     props: Props,
-    link: ComponentLink<Self>
+    link: ComponentLink<Self>,
+    on_destroy: Box<dyn FnMut()>
 }
 
 type YourId = Option<String>;
@@ -42,6 +43,11 @@ impl Component for Room {
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
         panic!()
+    }
+
+    fn destroy(&mut self) {
+        (self.on_destroy)();
+        self.on_destroy = Box::new(||());
     }
 
     fn view(&self) -> Html {
@@ -80,15 +86,15 @@ impl Component for Room {
         let callback = link.callback(
              |room : Option<RoomData>| room.map_or(Msg::RoomNotExists, Msg::UpdateRoom)
         );
-        //FIXME: unsync
-        sync_room(
+        let on_destroy = sync_room(
             room_id, 
             Box::new(move |room| callback.emit(room))
         );
         Self {
             state: State::Loading,
             props,
-            link
+            link,
+            on_destroy
         }
     }
 }

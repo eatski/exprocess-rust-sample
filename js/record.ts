@@ -19,13 +19,13 @@ export const pushRecord = (roomId:string,recordId:string,commandJson:string,resu
     });
 }
 
-export const syncRecordUpdate = (roomId:string,listener: (recordsJson:string) => void) => {
+export const syncRecordUpdate = (roomId:string,listener: (recordsJson:string) => void) : () => void => {
     const db = getStore();
     const rooms = collection(db,"rooms");
     const room = doc(rooms,roomId);
     const records = collection(room,"records");
     const orderedRecord = query(records,orderBy("seq_no"));
-    onSnapshot(orderedRecord,(snapshot) => {
+    return onSnapshot(orderedRecord,(snapshot) => {
         const recordsObj = snapshot
             .docChanges()
             .filter(change => change.type === "added")

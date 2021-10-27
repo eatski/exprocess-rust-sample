@@ -3,6 +3,8 @@ use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::{self};
 
+use self::js_bridge::jsfunction_to_function;
+
 #[derive(Serialize, Deserialize)]
 struct MemberJSON<'a> {
     pub name: &'a str,
@@ -22,21 +24,21 @@ fn json_to_members<'a>(json:&'a String) -> Vec<Member<'a>> {
             .collect::<Vec<Member>>()
 }
 
-pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) {
+pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) -> Box<dyn FnMut()>{
     let json_callback : Box<dyn Fn(String)>= Box::new(
         move |json:String| callback(json_to_members(&json))
     );
-    js_bridge::sync_member(
+    jsfunction_to_function(js_bridge::sync_member(
         room_id, 
         Closure::into_js_value(Closure::wrap(json_callback))
-    )
+    ))
 }
 
 pub fn fetch_members(room_id: &str,callback:Box<dyn FnOnce(Vec<Member>) -> ()>) {
     let json_callback : Box<dyn FnOnce(String)>= Box::new(
         move |json:String| callback(json_to_members(&json))
     );
-    js_bridge::sync_member(
+    js_bridge::fetch_members( 
         room_id, 
         Closure::into_js_value(Closure::once(json_callback))
     )
@@ -48,7 +50,7 @@ pub struct Member<'a> {
     pub you: bool
 }
 
-pub fn create_room(hostname: &str,callback : Box<dyn FnOnce(String)>) {
+pub fn create_room(hostname: &str,callback : Box<dyn FnMut(String)>) {
     js_bridge::create_room(
         hostname,
         Closure::into_js_value(Closure::once (callback))
@@ -72,7 +74,7 @@ pub struct RoomJSON<'a> {
     pub is_host: bool  
 }
 
-pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) {
+pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) -> Box<dyn FnMut()> {
     let callback = Box::new(move |room: Option<String>| {
         let room = room.map(|room| -> Room {
             let room: RoomJSON = serde_json::from_str(room.as_str()).expect("JSON Parse Error");
@@ -90,7 +92,7 @@ pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) {
     js_bridge::sync_room(
         room_id, 
         callback
-    );
+    )
 }
 
 pub fn start_room(room_id: &str) {
@@ -107,7 +109,7 @@ pub fn push_record(room_id: &str,record: RecordPushIO) {
     js_bridge::push_record(room_id,record.id,record.command,record.result)
 }
 
-pub fn sync_record_update<F: FnMut(String) + 'static>(room_id: &str,listener: F) {
+pub fn sync_record_update<F: FnMut(String) + 'static>(room_id: &str,listener: F) -> Box<dyn FnMut()> {
     js_bridge::sync_record_update(room_id, Box::new(listener))
 }
 

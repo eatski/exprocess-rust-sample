@@ -405,6 +405,7 @@ dependencies = [
  "exprocess",
  "getrandom 0.2.3",
  "instant",
+ "js-sys",
  "lipsum",
  "log",
  "rand 0.8.4",

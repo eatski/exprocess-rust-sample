@@ -19,11 +19,11 @@ export const publishRoomId = () => {
     return room.id;
 }
 
-export const syncRoom = (roomId:string,listener:(roomData:string | null) => void) => {
+export const syncRoom = (roomId:string,listener:(roomData:string | null) => void): () => void => {
     const db = getStore();
     const rooms = collection(db,"rooms");
     const room = doc(rooms,roomId);
-    onSnapshot(room, (data) => {
+    return onSnapshot(room, (data) => {
         const yourId = getYourId(roomId);
         const room: string | null = data.exists() ? 
             JSON.stringify({ 

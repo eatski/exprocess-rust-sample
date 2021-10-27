@@ -35,6 +35,10 @@ impl <Core: ExprocessCore + 'static,Inner: Repository<Core>> Repository<Core> fo
         }));
         self.listener = shared_listener;
     }
+
+    fn unsync(&mut self) {
+        self.inner.unsync();
+    }
 }
 
 impl <Core: ExprocessCore,Inner: Repository<Core>> DirectlyDispatch<Core,Inner> {

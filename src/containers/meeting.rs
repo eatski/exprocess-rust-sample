@@ -23,7 +23,8 @@ fn members_view(members:&Vec<Member>)-> VNode {
 pub struct Meeting {
     props: Props,
     state: State,
-    link: ComponentLink<Self>
+    link: ComponentLink<Self>,
+    on_destroy: Box<dyn FnMut()>
 }
 
 pub struct Member {
@@ -66,7 +67,7 @@ impl Component for Meeting {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let update = link.callback(Msg::UpdateMember);
-        sync_members(
+        let on_destroy = sync_members(
             props.room_id.as_str(), 
             Box::new(
                 move |members| {
@@ -82,7 +83,8 @@ impl Component for Meeting {
         Self {
             props,
             state: State::Loading,
-            link
+            link,
+            on_destroy
         }
     }
     
@@ -115,6 +117,11 @@ impl Component for Meeting {
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
         panic!()
+    }
+
+    fn destroy(&mut self) {
+        (self.on_destroy)();
+        self.on_destroy = Box::new(||());
     }
 
     fn view(&self) -> Html {
@@ -150,6 +157,7 @@ impl Component for Meeting {
 pub struct MeetingHost {
     props: PropsHost,
     state: StateHost,
+    on_destroy: Box<dyn FnMut()>
 }
 
 #[derive(Clone, Properties)]
@@ -176,7 +184,7 @@ impl Component for MeetingHost {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let update = link.callback(MsgHost::UpdateMember);
-        sync_members(
+        let on_destroy = sync_members(
             props.room_id.as_str(), 
             Box::new(
                 move |members| {
@@ -191,7 +199,8 @@ impl Component for MeetingHost {
         );
         Self {
             props,
-            state: StateHost::Loading
+            state: StateHost::Loading,
+            on_destroy
         }
     }
 
@@ -207,6 +216,11 @@ impl Component for MeetingHost {
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
         // propsのせいで発火する
         true
+    }
+
+    fn destroy(&mut self) {
+        (self.on_destroy)();
+        self.on_destroy = Box::new(||());
     }
 
     fn view(&self) -> Html {

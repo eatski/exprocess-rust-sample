@@ -17,6 +17,7 @@ pub struct Record<Core: ExprocessCore> {
 pub trait Repository<Core: ExprocessCore> {
     fn push(&mut self,record: Record<Core>);
     fn sync(&mut self,listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>);
+    fn unsync(&mut self);
 }
 
 pub type Listener<Core,State> = Box<dyn FnMut(Vec<RecordSync<Core>>,&State)>;
@@ -35,6 +36,7 @@ fn shared<T>(content:T) -> Shared<T> { Rc::new(RefCell::new(content))}
 
 //FIXME: ちゃんとやる
 impl <Core: ExprocessCore + 'static> Runner<Core> {
+
     pub fn start<Repo: Repository<Core> + 'static>(
         mut repository:Repo,
         mut listener: Listener<Core,Core::State>
@@ -71,5 +73,7 @@ impl <Core: ExprocessCore + 'static> Runner<Core> {
         };
         self.repository.push(record);
     }
-
+    pub fn unsync(&mut self){
+        self.repository.unsync();
+    }
 }

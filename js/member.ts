@@ -14,12 +14,12 @@ export const registerMember = async (roomId:string,name:string):Promise<string> 
     return member.id;
 }
 
-export const syncMember = (roomId:string,listener:(json:string) => void) => {
+export const syncMember = (roomId:string,listener:(json:string) => void) : () => void => {
     const db = getStore();
     const rooms = collection(db,"rooms");
     const room = doc(rooms,roomId);
     const members = collection(room,"members");
-    onSnapshot(members,(snapshot) => {
+    return onSnapshot(members,(snapshot) => {
         const yourId = getYourId(roomId);
         const json = JSON.stringify(
             snapshot.docs.map(doc => ({
