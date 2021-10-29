@@ -19,11 +19,11 @@ pub enum Msg {
     ReBoot
 }
 
-pub struct Model {
+pub struct App {
     sleep: bool,
     link: ComponentLink<Self>
 }
-impl Component for Model {
+impl Component for App {
     type Message = Msg;
     type Properties = ();
 
@@ -81,7 +81,7 @@ impl Component for Model {
         }
     }
 }
-impl Model {
+impl App {
     fn switch(switch: PublicUrlSwitch) -> Html {
         match switch.route() {
             AppRoute::Home => {
@@ -101,5 +101,5 @@ impl Model {
 #[wasm_bindgen]
 pub fn main() {
     wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
-    yew::start_app::<Model>();
+    yew::start_app::<App>();
 }
