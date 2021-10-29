@@ -1,4 +1,4 @@
-import { collection,doc,setDoc,onSnapshot,getDocs } from "@firebase/firestore";
+import { collection,doc,setDoc,onSnapshot,getDocs } from "firebase/firestore";
 import { getStore } from "./firestore";
 import { getYourId, setYourId } from "./yourid";
 
