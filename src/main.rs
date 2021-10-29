@@ -15,13 +15,11 @@ mod switch;
 use switch::{AppRoute, AppRouter, PublicUrlSwitch};
 
 pub enum Msg {
-    ToggleNavbar,
     Sleep,
     ReBoot
 }
 
 pub struct Model {
-    navbar_active: bool,
     sleep: bool,
     link: ComponentLink<Self>
 }
@@ -31,7 +29,6 @@ impl Component for Model {
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            navbar_active: false,
             sleep: false,
             link
         }
@@ -39,10 +36,6 @@ impl Component for Model {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::ToggleNavbar => {
-                self.navbar_active = !self.navbar_active;
-                true
-            }
             Msg::Sleep => {
                 self.sleep = true;
                 true
