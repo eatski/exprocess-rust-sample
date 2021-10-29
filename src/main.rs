@@ -94,7 +94,7 @@ impl Model {
     }
     fn set_timer(&mut self) {
         let sleep = self.link.callback(|_| Msg::Sleep);
-        let _ = set_timeout_no_mousemove(move || {sleep.emit(());}, 1000 * 60 * 30, 1000);
+        drop(set_timeout_no_mousemove(move || {sleep.emit(());}, 1000 * 60 * 30, 1000));
     }
 }
 
