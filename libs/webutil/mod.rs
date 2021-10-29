@@ -34,7 +34,6 @@ pub mod window {
 pub mod util {
     use std::{cell::RefCell, rc::Rc};
 
-    use mytil::{SingletonStateContainer};
     use crate::window::add_eventlistener;
 
     use super::window::set_timeout;
@@ -42,13 +41,13 @@ pub mod util {
      * callbackを発火し、一定期間そのcallbackの実行を止める
      */
     pub fn stop_interval(mut callback:Box<dyn FnMut()>,interval: u32) -> Box<dyn FnMut()> {
-        let stopping = SingletonStateContainer::new(false);
+        let stopping = Rc::new(RefCell::new(false));
         Box::new(move || {
-            if !stopping.get() {
+            if !*stopping.borrow() {
                 callback();
-                stopping.set(true);
+                stopping.replace(true);
                 let stopping = stopping.clone();
-                let _ = set_timeout(move || stopping.set(false), interval);
+                let _ = set_timeout(move || { stopping.replace(false); }, interval);
             }
         })
     }
