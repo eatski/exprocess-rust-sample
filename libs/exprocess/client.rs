@@ -23,11 +23,7 @@ pub trait Repository<Core: ExprocessCore> {
 pub type Listener<Core,State> = Box<dyn FnMut(Vec<RecordSync<Core>>,&State)>;
 pub struct Runner<Core: ExprocessCore> {
     repository: Box<dyn Repository<Core>>,
-    state: Shared<StateWrapper<Core::State>>
-}
-
-struct StateWrapper<S> {
-    pub state: S
+    state: Shared<Core::State>
 }
 
 type Shared<T> = Rc<RefCell<T>>;
@@ -41,15 +37,14 @@ impl <Core: ExprocessCore + 'static> Runner<Core> {
         mut repository:Repo,
         mut listener: Listener<Core,Core::State>
     ) -> Self {
-        let init = Core::init();
-        let shared_state = shared(StateWrapper {state:init});
+        let shared_state = shared(Core::init());
         let cloned = shared_state.clone();
         repository.sync(Box::new(move |records| {
             let mut shared = cloned.borrow_mut();
             for record in records.iter() {
-                Core::reducer(&mut shared.state ,record.result);
+                Core::reducer(&mut shared ,record.result);
             }
-            (listener)(records,&shared.state);
+            (listener)(records,&shared);
         }));
         Self {
             state:shared_state,
@@ -63,7 +58,7 @@ impl <Core: ExprocessCore + 'static> Runner<Core> {
          */ 
         let record = {
             let shared = self.state.borrow();
-            let result = Core::resolve(&shared.state, &command);
+            let result = Core::resolve(&shared, &command);
             let id = Uuid::new_v4().to_hyphenated().to_string();
             Record {
                 id,
