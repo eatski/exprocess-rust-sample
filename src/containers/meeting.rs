@@ -35,10 +35,12 @@ pub struct Member {
 
 enum State {
     Loading,
-    Fetched {
-        members:Vec<Member>,
-        form:FormState
-    }
+    Fetched(Fetched)
+}
+
+struct Fetched {
+    members:Vec<Member>,
+    form:FormState
 }
 enum FormState {
     Joinable {
@@ -47,7 +49,8 @@ enum FormState {
     Joined,
     JoinedAsHost {
         start: Callback<()> 
-    }
+    },
+    Loading
 }
 
 #[derive(Clone, Debug, Properties)]
@@ -101,15 +104,21 @@ impl Component for Meeting {
                             join: self.link.callback(|name| Msg::Join {name})
                         }
                     };
-                self.state = State::Fetched {members,form};
+                self.state = State::Fetched( Fetched {members,form} );
                 true
             },
             Msg::Join { name } => {
+                match &mut self.state {
+                    State::Fetched(fetched)  => {
+                        fetched.form = FormState::Loading;
+                    },
+                    _ => panic!()
+                }
                 register_member(
                     self.props.room_id.as_str(),
                     name.as_str()
                 );
-                false
+                true
             },
             
         }
@@ -126,8 +135,8 @@ impl Component for Meeting {
     fn view(&self) -> Html {
         match &self.state {
             State::Loading => loading(),
-            State::Fetched { members, form } => {
-                let form_html = match form {
+            State::Fetched (fetched) => {
+                let form_html = match &fetched.form {
                     FormState::Joinable {join} => html! { 
                         <Input on_submit=join button="Join"/>
                     },
@@ -138,11 +147,12 @@ impl Component for Meeting {
                             <button onclick=onclick>{"Start"}</button>
                         }
                     }
+                    FormState::Loading => loading(),
                 };
                 html! { 
                     <>
                         <h2> { "Meeting"} </h2>
-                        {members_view(members)}
+                        {members_view(&fetched.members)}
                         {form_html}
                     </>
                 }

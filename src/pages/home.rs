@@ -1,12 +1,20 @@
 use yew::prelude::*;
 use yew_router::{agent::RouteRequest, prelude::*};
+use crate::components::loading;
 use crate::repository::{create_room};
 use crate::components::text_input::{Input};
 
 use crate::switch::AppRoute;
 
 pub struct Home {
-    on_submit: Callback<String>
+    state: State
+}
+
+pub enum State {
+    Init {
+        on_submit: Callback<String>
+    },
+    Creating,
 }
 
 pub enum Msg {
@@ -18,7 +26,9 @@ impl Component for Home {
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            on_submit: link.callback(Msg::CreateRoom)
+            state: State::Init {
+                on_submit:  link.callback(Msg::CreateRoom)
+            }
         }
     }
 
@@ -31,8 +41,8 @@ impl Component for Home {
                     let route = AppRoute::Room(id);
                     let mut dispatcher = RouteAgentDispatcher::new();
                     dispatcher.send(RouteRequest::ChangeRoute(route.into_route()));
-                    
                 }));
+                self.state = State::Creating;
             },
         }
         true
@@ -43,11 +53,17 @@ impl Component for Home {
     }
 
     fn view(&self) -> Html {
-        html! {
-            <div>
-                <h2>{ "Home" }</h2>
-                <Input on_submit=&self.on_submit button="Join"/>
-            </div>
+        match &self.state {
+            State::Init { on_submit } => {
+                html! {
+                    <div>
+                        <h2>{ "Home" }</h2>
+                        <Input on_submit=on_submit button="Join"/>
+                    </div>
+                }
+            },
+            State::Creating => loading::loading(),
         }
+        
     }
 }
