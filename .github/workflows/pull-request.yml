@@ -4,7 +4,7 @@
 name: Build & Test on pull-request
 'on': pull_request
 jobs:
-  setup_rust:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,28 +16,12 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-  cargo_test:
-    needs: 
-      - setup_rust
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
       - name: Cargo test
         run: cargo test --workspace
-  build_wasm:
-    needs: 
-      - setup_rust
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - name: Build wasm
         run: wasm-pack build --release
-  setup_node:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
       - name: Use node cache
         uses: actions/cache@v2
         with:
@@ -45,14 +29,5 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - name: Install node_modules
-        run: npm ci --production
-  build_webapp:
-    runs-on: ubuntu-latest
-    needs:
-      - setup_node
-      - build_wasm
-    steps:
-      - uses: actions/checkout@v2
       - name: Node build
-        run: npm run build
+        run: npm ci --production && npm run build
