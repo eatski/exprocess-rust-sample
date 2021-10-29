@@ -1,0 +1,12 @@
+[package]
+name = "webutil"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+crate-type = ["lib"]
+path = "mod.rs"
+
+[dependencies]
+wasm-bindgen = "0.2"
+mytil = { path = "../mytil"}

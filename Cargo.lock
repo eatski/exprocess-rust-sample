@@ -283,6 +283,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "308cc39be01b73d0d18f82a0e7b2a3df85245f84af96fdddc5d202d27e47b86a"
 
 [[package]]
+name = "mytil"
+version = "0.1.0"
+
+[[package]]
 name = "nom"
 version = "5.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -408,11 +412,13 @@ dependencies = [
  "js-sys",
  "lipsum",
  "log",
+ "mytil",
  "rand 0.8.4",
  "serde",
  "serde_json",
  "wasm-bindgen",
  "wasm-logger",
+ "webutil",
  "yew",
  "yew-router",
  "yewtil",
@@ -617,6 +623,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38eb105f1c59d9eaa6b5cdc92b859d85b926e82cb2e0945cd0c9259faa6fe9fb"
 dependencies = [
  "js-sys",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "webutil"
+version = "0.1.0"
+dependencies = [
+ "mytil",
  "wasm-bindgen",
 ]
 

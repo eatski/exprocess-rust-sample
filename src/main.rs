@@ -1,3 +1,4 @@
+use webutil::util::set_timeout_no_mousemove;
 use yew::prelude::*;
 use wasm_bindgen::prelude::*;
 
@@ -6,6 +7,7 @@ mod components;
 mod containers;
 mod domain;
 mod pages;
+
 use pages::{
     home::Home,room::Room,
 };
@@ -14,18 +16,24 @@ use switch::{AppRoute, AppRouter, PublicUrlSwitch};
 
 pub enum Msg {
     ToggleNavbar,
+    Sleep,
+    ReBoot
 }
 
 pub struct Model {
     navbar_active: bool,
+    sleep: bool,
+    link: ComponentLink<Self>
 }
 impl Component for Model {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_props: Self::Properties, _link: ComponentLink<Self>) -> Self {
+    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             navbar_active: false,
+            sleep: false,
+            link
         }
     }
 
@@ -35,7 +43,20 @@ impl Component for Model {
                 self.navbar_active = !self.navbar_active;
                 true
             }
+            Msg::Sleep => {
+                self.sleep = true;
+                true
+            },
+            Msg::ReBoot => {
+                self.sleep = false;
+                self.set_timer();
+                true
+            },
         }
+    }
+
+    fn rendered(&mut self, first_render: bool) {
+        if first_render { self.set_timer();}
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
@@ -45,10 +66,24 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <main>
-                <AppRouter
-                    render=AppRouter::render(Self::switch)
-                    redirect=AppRouter::redirect(|_| panic!())
-                />
+                {if self.sleep {
+                    let reboot = self.link.callback(|_| Msg::ReBoot);
+                    html! {
+                        <main>
+                            <h2>{"Are You Sleeping?"}</h2>
+                            <button onclick={reboot}>{"Restart"}</button>
+                        </main>
+                        
+                    }
+                } else {
+                    html! {
+                        <AppRouter
+                            render=AppRouter::render(Self::switch)
+                            redirect=AppRouter::redirect(|_| panic!())
+                        />
+                    }
+                }}
+                
             </main>
         }
     }
@@ -63,6 +98,10 @@ impl Model {
                 html! { <Room room_id=room_id/> }
             }
         }
+    }
+    fn set_timer(&mut self) {
+        let sleep = self.link.callback(|_| Msg::Sleep);
+        let _ = set_timeout_no_mousemove(move || {sleep.emit(());}, 1000 * 60 * 30, 1000);
     }
 }
 
