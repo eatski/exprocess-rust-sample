@@ -31,16 +31,16 @@ extern "C" {
     pub fn get_your_id(room_id: &str) -> Option<String>;
 }
 
-pub fn sync_room(room_id: &str,callback: Box<dyn Fn(Option<String>)>) -> Box<dyn FnMut()> {
+pub fn sync_room(room_id: &str,callback: Box<dyn Fn(Option<String>)>) -> Box<dyn FnOnce()> {
     let callback = Closure::into_js_value(Closure::wrap(callback));
     jsfunction_to_function(sync_room_bridge(room_id,callback))
 }
 
-pub fn sync_record_update(room_id: &str, callback: Box<dyn FnMut(String)>) -> Box<dyn FnMut()> {
+pub fn sync_record_update(room_id: &str, callback: Box<dyn FnMut(String)>) -> Box<dyn FnOnce()> {
     let callback = Closure::into_js_value(Closure::wrap(callback));
     jsfunction_to_function(sync_record_update_bridge(room_id,callback))
 }
 
-pub fn jsfunction_to_function(f: Function) -> Box<dyn FnMut()>{
+pub fn jsfunction_to_function(f: Function) -> Box<dyn FnOnce()>{
     Box::new(move || {f.call0(&JsValue::NULL).expect("JS function call err");})
 }

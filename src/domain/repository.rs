@@ -7,20 +7,16 @@ use super::state::{AppCommand, AppCore, AppResult};
 
 pub struct AppRepository {
     room_id: String,
-    unsync_fn: Box<dyn FnMut()>
+    unsync_fn: Option<Box<dyn FnOnce()>>
 }
 
 impl AppRepository {
     pub fn new(room_id: String) -> Self {
         Self {
             room_id,
-            unsync_fn: noop()
+            unsync_fn: None
         }
     }
-}
-
-fn noop() -> Box<dyn FnMut()>{
-    Box::new(|| {})
 }
 
 #[derive(Deserialize)]
@@ -44,19 +40,18 @@ impl Repository<AppCore> for AppRepository {
     }
 
     fn sync(&mut self,mut listener: Box<dyn FnMut(Vec<RecordSync<AppCore>>)>) {
-        self.unsync_fn = sync_record_update(self.room_id.as_str(), move |json| {
+        self.unsync_fn = Some(sync_record_update(self.room_id.as_str(), move |json| {
             let records : Vec<RecordDesirailizeIO> = serde_json::from_str(&json).expect("JSON Parse Err");
             listener(
                 records.iter()
                 .map(|record| RecordSync {id: record.id.as_str(), result: &record.result, command: &record.command}) 
                 .collect()
             );
-        });
+        }));
     }
 
     fn unsync(&mut self) {
-        (self.unsync_fn)();
-        self.unsync_fn = noop();
+        self.unsync_fn.take().map(|call| call());
     }
 }
 

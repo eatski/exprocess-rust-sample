@@ -24,7 +24,7 @@ fn json_to_members<'a>(json:&'a String) -> Vec<Member<'a>> {
             .collect::<Vec<Member>>()
 }
 
-pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) -> Box<dyn FnMut()>{
+pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) -> Box<dyn FnOnce()>{
     let json_callback : Box<dyn Fn(String)>= Box::new(
         move |json:String| callback(json_to_members(&json))
     );
@@ -74,7 +74,7 @@ pub struct RoomJSON<'a> {
     pub is_host: bool  
 }
 
-pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) -> Box<dyn FnMut()> {
+pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) -> Box<dyn FnOnce()> {
     let callback = Box::new(move |room: Option<String>| {
         let room = room.map(|room| -> Room {
             let room: RoomJSON = serde_json::from_str(room.as_str()).expect("JSON Parse Error");
@@ -109,7 +109,7 @@ pub fn push_record(room_id: &str,record: RecordPushIO) {
     js_bridge::push_record(room_id,record.id,record.command,record.result)
 }
 
-pub fn sync_record_update<F: FnMut(String) + 'static>(room_id: &str,listener: F) -> Box<dyn FnMut()> {
+pub fn sync_record_update<F: FnMut(String) + 'static>(room_id: &str,listener: F) -> Box<dyn FnOnce()> {
     js_bridge::sync_record_update(room_id, Box::new(listener))
 }
 

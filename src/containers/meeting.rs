@@ -24,7 +24,7 @@ pub struct Meeting {
     props: Props,
     state: State,
     link: ComponentLink<Self>,
-    on_destroy: Box<dyn FnMut()>
+    on_destroy: Option<Box<dyn FnOnce()>>
 }
 
 pub struct Member {
@@ -84,7 +84,7 @@ impl Component for Meeting {
             props,
             state: State::Loading,
             link,
-            on_destroy
+            on_destroy: Some(on_destroy)
         }
     }
     
@@ -120,8 +120,7 @@ impl Component for Meeting {
     }
 
     fn destroy(&mut self) {
-        (self.on_destroy)();
-        self.on_destroy = Box::new(||());
+        self.on_destroy.take().map(|call| call());
     }
 
     fn view(&self) -> Html {
@@ -157,7 +156,7 @@ impl Component for Meeting {
 pub struct MeetingHost {
     props: PropsHost,
     state: StateHost,
-    on_destroy: Box<dyn FnMut()>
+    on_destroy: Option<Box<dyn FnOnce()>>
 }
 
 #[derive(Clone, Properties)]
@@ -200,7 +199,7 @@ impl Component for MeetingHost {
         Self {
             props,
             state: StateHost::Loading,
-            on_destroy
+            on_destroy: Some(on_destroy)
         }
     }
 
@@ -219,8 +218,7 @@ impl Component for MeetingHost {
     }
 
     fn destroy(&mut self) {
-        (self.on_destroy)();
-        self.on_destroy = Box::new(||());
+        self.on_destroy.take().map(|call| call());
     }
 
     fn view(&self) -> Html {

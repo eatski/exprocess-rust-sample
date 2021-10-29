@@ -7,7 +7,7 @@ pub struct Room {
     state: State,
     props: Props,
     link: ComponentLink<Self>,
-    on_destroy: Box<dyn FnMut()>
+    on_destroy: Option<Box<dyn FnOnce()>>
 }
 
 type YourId = Option<String>;
@@ -46,8 +46,7 @@ impl Component for Room {
     }
 
     fn destroy(&mut self) {
-        (self.on_destroy)();
-        self.on_destroy = Box::new(||());
+        self.on_destroy.take().map(|call| call());
     }
 
     fn view(&self) -> Html {
@@ -94,7 +93,7 @@ impl Component for Room {
             state: State::Loading,
             props,
             link,
-            on_destroy
+            on_destroy:Some(on_destroy)
         }
     }
 }

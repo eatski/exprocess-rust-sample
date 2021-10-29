@@ -32,7 +32,7 @@ pub mod window {
 }
 
 pub mod util {
-    use std::{cell::{Cell, RefCell}, rc::Rc};
+    use std::{cell::{RefCell}, rc::Rc};
 
     use crate::window::add_eventlistener;
 
@@ -55,26 +55,25 @@ pub mod util {
     pub struct ResetableTimer<CB: FnMut()> {
         callback: Rc<RefCell<CB>>,
         ms: u32,
-        clear_inner: Cell<Option<Box<dyn FnOnce()>>>
+        clear_inner: Option<Box<dyn FnOnce()>>
     }
     
     impl <CB: FnMut() + 'static>ResetableTimer<CB> {
         pub fn start(&mut self) {
             let callback = self.callback.clone();
             let clear = self.clear_inner.replace(
-                Some(set_timeout(move || callback.borrow_mut()(), self.ms))
+                set_timeout(move || callback.borrow_mut()(), self.ms)
             );
             clear.map(|clear| clear());
         }
         pub fn clear(&mut self) {
-            let clear = self.clear_inner.replace(None);
-            clear.map(|clear| clear());
+            self.clear_inner.take().map(|clear| clear());
         }
         pub fn new(callback: CB,ms: u32) -> Self {
             Self {
                 callback: Rc::new(RefCell::new(callback)),
                 ms,
-                clear_inner: Cell::new(None)
+                clear_inner: None
             }
         }
     }
