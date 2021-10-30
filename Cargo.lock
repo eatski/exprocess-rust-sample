@@ -287,6 +287,15 @@ name = "mytil"
 version = "0.1.0"
 
 [[package]]
+name = "names"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10a8690bf09abf659851e58cd666c3d37ac6af07c2bd7a9e332cfba471715775"
+dependencies = [
+ "rand 0.8.4",
+]
+
+[[package]]
 name = "nom"
 version = "5.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -412,6 +421,7 @@ dependencies = [
  "js-sys",
  "lipsum",
  "log",
+ "names",
  "rand 0.8.4",
  "serde",
  "serde_json",

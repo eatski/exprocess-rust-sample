@@ -13,7 +13,7 @@ extern "C" {
     pub fn fetch_members(room_id: &str,callback: JsValue);
 
     #[wasm_bindgen(js_name = "createRoom",js_namespace = ["window","_wasm_js_bridge"])]
-    pub fn create_room(hostName:&str,callback: JsValue);
+    pub fn create_room(room_id: &str,hostName:&str,callback: JsValue);
 
     #[wasm_bindgen(js_name = "syncRoom",js_namespace = ["window","_wasm_js_bridge"])]
     fn sync_room_bridge(room_id: &str,callback: JsValue) -> Function;
