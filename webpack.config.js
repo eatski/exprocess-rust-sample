@@ -1,5 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 
 const BUILD_MODE = "BUILD_MODE";
@@ -46,6 +47,11 @@ module.exports = {
     }),
     new webpack.EnvironmentPlugin({
       [BUILD_MODE]: null
-    })
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: "assets", to: "assets" },
+      ],
+    }),
   ],
 };
