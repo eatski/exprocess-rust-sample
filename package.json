@@ -6,10 +6,9 @@
   "scripts": {
     "test": "cargo test --workspace",
     "build": "webpack",
-    "dev": "BUILD_MODE=dev webpack serve & npm run firestore",
-    "firestore": "firebase emulators:start --only firestore",
-    "wasm": "wasm-pack build",
-    "hosting": "firebase emulators:start --only hosting"
+    "dev": "BUILD_MODE=dev webpack --watch & npm run emu",
+    "emu": "firebase emulators:start",
+    "wasm": "wasm-pack build"
   },
   "repository": {
     "type": "git",
@@ -32,7 +31,6 @@
     "webpack-cli": "^4.9.1"
   },
   "devDependencies": {
-    "webpack-dev-server": "^4.3.1",
     "firebase-tools": "^9.20.0"
   }
 }

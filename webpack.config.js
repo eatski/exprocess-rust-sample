@@ -33,13 +33,6 @@ module.exports = {
   experiments: {
     asyncWebAssembly: true,
   },
-  devServer: {
-    historyApiFallback: true,
-    hot:false,
-    client: {
-      overlay: false,
-    },
-  },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "index.html"),
