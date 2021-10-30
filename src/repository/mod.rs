@@ -2,6 +2,7 @@ mod js_bridge;
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::{self};
+use names::{Generator, Name};
 
 use self::js_bridge::jsfunction_to_function;
 
@@ -50,11 +51,15 @@ pub struct Member<'a> {
     pub you: bool
 }
 
-pub fn create_room(hostname: &str,callback : Box<dyn FnMut(String)>) {
+pub fn create_room(hostname: &str,callback : Box<dyn FnMut()>) -> String {
+    let mut generator = Generator::with_naming(Name::Numbered);
+    let room_id = generator.next().unwrap();
     js_bridge::create_room(
+        room_id.as_str(),
         hostname,
         Closure::into_js_value(Closure::once (callback))
-    )
+    );
+    room_id
 }
 
 pub enum Phase {

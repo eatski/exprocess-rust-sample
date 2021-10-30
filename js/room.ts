@@ -12,13 +12,6 @@ export const openRoom = async (roomId:string,hostMemberId: string):Promise<void>
     });
 }
 
-export const publishRoomId = () => {
-    const db = getStore();
-    const rooms = collection(db,"rooms");
-    const room = doc(rooms);
-    return room.id;
-}
-
 export const syncRoom = (roomId:string,listener:(roomData:string | null) => void): () => void => {
     const db = getStore();
     const rooms = collection(db,"rooms");

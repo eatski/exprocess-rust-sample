@@ -14,7 +14,6 @@ pub enum State {
     Init {
         on_submit: Callback<String>
     },
-    Creating,
 }
 
 pub enum Msg {
@@ -35,14 +34,12 @@ impl Component for Home {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::CreateRoom(name) => {
-                create_room(
+                let id = create_room(
                     &name,
-                    Box::new(move |id| {
-                    let route = AppRoute::Room(id);
-                    let mut dispatcher = RouteAgentDispatcher::new();
-                    dispatcher.send(RouteRequest::ChangeRoute(route.into_route()));
-                }));
-                self.state = State::Creating;
+                    Box::new(|| {}));
+                let route = AppRoute::Room(id);
+                let mut dispatcher = RouteAgentDispatcher::new();
+                dispatcher.send(RouteRequest::ChangeRoute(route.into_route()));
             },
         }
         true
@@ -62,7 +59,6 @@ impl Component for Home {
                     </div>
                 }
             },
-            State::Creating => loading::loading(),
         }
         
     }
