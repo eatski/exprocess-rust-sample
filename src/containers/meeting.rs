@@ -249,7 +249,7 @@ impl Component for MeetingHost {
                         <h2> {"Start when you have all the members!"} </h2>
                         <a href=route>{"Copy this and share URL!"}</a>
                         {members_view(members)}
-                        <button onclick=onclick>{"Start！"}</button>
+                        <button onclick=onclick>{"Start!"}</button>
                     </>
                 }
             },
