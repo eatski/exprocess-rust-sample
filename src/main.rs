@@ -58,26 +58,34 @@ impl Component for App {
 
     fn view(&self) -> Html {
         html! {
-            <main>
-                {if self.sleep {
-                    let reboot = self.link.callback(|_| Msg::ReBoot);
-                    html! {
-                        <main>
-                            <h2>{"Are You Sleeping?"}</h2>
-                            <button onclick={reboot}>{"Restart"}</button>
-                        </main>
-                        
-                    }
-                } else {
-                    html! {
-                        <AppRouter
-                            render=AppRouter::render(Self::switch)
-                            redirect=AppRouter::redirect(|_| panic!())
-                        />
-                    }
-                }}
-                
-            </main>
+            <>
+                <header>
+                    <a href="/">
+                        <img src="/assets/favicon.ico" />
+                        <strong>{"Roll Role"}</strong>
+                    </a>
+                    
+                </header>
+                <main>
+                    {if self.sleep {
+                        html! {
+                            <main>
+                                <h2>{"Are You Sleeping?"}</h2>
+                                <button onclick={self.link.callback(|_| Msg::ReBoot)}>{"Restart"}</button>
+                            </main>
+                            
+                        }
+                    } else {
+                        html! {
+                            <AppRouter
+                                render=AppRouter::render(Self::switch)
+                                redirect=AppRouter::redirect(|_| panic!())
+                            />
+                        }
+                    }}
+                    
+                </main>
+            </>
         }
     }
 }
@@ -99,7 +107,21 @@ impl App {
 }
 
 #[wasm_bindgen]
-pub fn main() {
-    wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
+pub fn start(mode: AppMode) {
+    let log_level = match mode {
+        AppMode::Dev => log::Level::Trace,
+        AppMode::Production => log::Level::Error,
+    };
+    wasm_logger::init(wasm_logger::Config::new(log_level));
     yew::start_app::<App>();
+}
+
+// コンパイルエラー回避のため仕方なく
+pub fn main() {
+    panic!()
+}
+
+#[wasm_bindgen]
+pub enum AppMode{
+    Dev,Production
 }

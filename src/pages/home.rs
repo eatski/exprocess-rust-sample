@@ -1,6 +1,5 @@
 use yew::prelude::*;
 use yew_router::{agent::RouteRequest, prelude::*};
-use crate::components::loading;
 use crate::repository::{create_room};
 use crate::components::text_input::{Input};
 
@@ -54,8 +53,9 @@ impl Component for Home {
             State::Init { on_submit } => {
                 html! {
                     <div>
-                        <h2>{ "Home" }</h2>
-                        <Input on_submit=on_submit button="Join"/>
+                        <h2>{ "Roll Role" }</h2>
+                        <p>{"This app determines your role at random by rolling. "}</p>
+                        <Input on_submit=on_submit value="host" button="Join"/>
                     </div>
                 }
             },
