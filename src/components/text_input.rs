@@ -9,8 +9,11 @@ type OnSubmit =  Callback<String>;
 
 #[derive(Clone, PartialEq, Properties)]
 pub struct Props {
+    #[prop_or_default]
+    pub value: String,
     pub on_submit: OnSubmit,
     pub button: String,
+    pub pattern: Option<String>
 }
 
 pub enum Msg {
@@ -23,9 +26,10 @@ impl Component for Input {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let initial_value = props.value.clone();
         Self {
+            value: initial_value,
             props: props,
-            value: String::from(""),
             link
         }
     }
@@ -56,7 +60,7 @@ impl Component for Input {
         let value = self.value.clone();
         html! {
             <div>
-                <input value=value onchange=onchange/>
+                <input type="text" value=value minlength=1 pattern=self.props.pattern.clone() onchange=onchange/>
                 <button onclick=onclick>{&self.props.button}</button>
             </div>
         }

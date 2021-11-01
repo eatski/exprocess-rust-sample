@@ -4,6 +4,7 @@ use crate::components::text_input::Input;
 
 use crate::components::loading::loading;
 use crate::repository::{register_member,sync_members};
+use crate::switch::AppRoute;
 
 // Common
 
@@ -136,6 +137,12 @@ impl Component for Meeting {
         match &self.state {
             State::Loading => loading(),
             State::Fetched (fetched) => {
+                let title = match &fetched.form {
+                    FormState::Joinable { join: _ } => "JOIN US!",
+                    FormState::Joined => "Waiting host...",
+                    FormState::JoinedAsHost { start: _ } => todo!(),
+                    FormState::Loading => "...",
+                };
                 let form_html = match &fetched.form {
                     FormState::Joinable {join} => html! { 
                         <Input on_submit=join button="Join"/>
@@ -151,7 +158,7 @@ impl Component for Meeting {
                 };
                 html! { 
                     <>
-                        <h2> { "Meeting"} </h2>
+                        <h2> {title} </h2>
                         {members_view(&fetched.members)}
                         {form_html}
                     </>
@@ -235,12 +242,14 @@ impl Component for MeetingHost {
         match &self.state {
             StateHost::Loading => loading(),
             StateHost::Fetched { members } => {
+                let route = AppRoute::Room(self.props.room_id.clone()).into_route().route;
                 let onclick = self.props.start.reform(|_| ());
                 html! { 
                     <>
-                        <h2> {"Host"} </h2>
+                        <h2> {"Start when you have all the members!"} </h2>
+                        <a href=route>{"Copy this and share URL!"}</a>
                         {members_view(members)}
-                        <button onclick=onclick>{"Start"}</button>
+                        <button onclick=onclick>{"Start!"}</button>
                     </>
                 }
             },

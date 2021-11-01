@@ -9,7 +9,6 @@ pub struct Main {
 }
 
 pub enum ViewState {
-    Loading,
     Blank,
     Standby { 
         members:Vec<String>,
@@ -100,9 +99,7 @@ impl Component for Main {
 
     fn view(&self) -> Html {
         match &self.state {
-            ViewState::Blank => html! {
-                "Started"
-            },
+            ViewState::Blank => loading(),
             ViewState::Standby {members, host_form} => {
                 let host_form_view = match host_form {
                     Some(on_submit) => html! {
@@ -140,12 +137,19 @@ impl Component for Main {
                 
                 html! {
                     <section>
-                        <h2>{format!("You({}) is [{}]",you.name,your_role.name)}</h2>
+                        <h2>{"Result"}</h2>
+                        // いい感じに書きたい 
+                        <p>
+                            {"You("} 
+                            {html! {<strong>{&you.name}</strong>}}
+                            {") are "}
+                            {html! {<strong>{&your_role.name}</strong>}}
+                        </p>
                     </section>
                 }
             },
-            ViewState::Loading => loading(),
         }
         
     }
 }
+
