@@ -1,9 +1,9 @@
-import * as member from "./js/member";
-import * as room from "./js/room";
-import * as record from "./js/record";
-import {getYourId as getYourIdInner} from "./js/yourid";
+import * as member from "./member";
+import * as room from "./room";
+import * as record from "./record";
+import {getYourId as getYourIdInner} from "./yourid";
 import { connectFirestoreEmulator } from "firebase/firestore";
-import { getStore } from "./js/firestore";
+import { getStore } from "./firestore";
 if(process.env.BUILD_MODE === "dev"){
     console.log("This is devmode!");
     const db = getStore();
