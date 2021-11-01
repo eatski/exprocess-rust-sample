@@ -48,9 +48,6 @@ enum FormState {
         join: Callback<String> 
     },
     Joined,
-    JoinedAsHost {
-        start: Callback<()> 
-    },
     Loading
 }
 
@@ -97,9 +94,7 @@ impl Component for Meeting {
             Msg::UpdateMember(members) => {
                 let form = 
                     if members.iter().any(|m| m.you) { 
-                        self.props.host
-                            .clone()
-                            .map_or(FormState::Joined , |start|  FormState::JoinedAsHost {start})    
+                        FormState::Joined
                     } else { 
                         FormState::Joinable {
                             join: self.link.callback(|name| Msg::Join {name})
@@ -140,7 +135,6 @@ impl Component for Meeting {
                 let title = match &fetched.form {
                     FormState::Joinable { join: _ } => "JOIN US!",
                     FormState::Joined => "Waiting host...",
-                    FormState::JoinedAsHost { start: _ } => todo!(),
                     FormState::Loading => "...",
                 };
                 let form_html = match &fetched.form {
@@ -148,12 +142,6 @@ impl Component for Meeting {
                         <Input on_submit=join button="Join"/>
                     },
                     FormState::Joined => html! {},
-                    FormState::JoinedAsHost { start } => {
-                        let onclick = start.reform(|_| ());
-                        html! { 
-                            <button onclick=onclick>{"Start"}</button>
-                        }
-                    }
                     FormState::Loading => loading(),
                 };
                 html! { 
