@@ -5,18 +5,20 @@ name: Deploy to Firebase Hosting on merge
 'on':
   push:
     branches:
-      - main
+      - testes2
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Output commit hash
+        run: npm run commithashes
       - name: use node build
         id: node_build_chache
         uses: actions/cache@v2
         with:
           path: dist
-          key: ${{ runner.os }}-nodebuild-${{ github.sha }}
+          key: ${{ runner.os }}-nodebuild-${{ hashFiles('gitcommithash.log') }}
       - name: Use cargo cache
         if: steps.node_build_chache.outputs.cache-hit != 'true'
         uses: actions/cache@v2

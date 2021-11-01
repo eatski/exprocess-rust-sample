@@ -8,7 +8,8 @@
     "build": "webpack",
     "dev": "BUILD_MODE=dev webpack --watch & npm run emu",
     "emu": "firebase emulators:start",
-    "wasm": "wasm-pack build"
+    "wasm": "wasm-pack build",
+    "commithashes": "git log --pretty=format:'%h' --no-merges > gitcommithash.log"
   },
   "repository": {
     "type": "git",
