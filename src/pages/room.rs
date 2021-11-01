@@ -36,7 +36,10 @@ impl Component for Room {
         match msg {
             Msg::UpdateRoom(room) => self.state = State::Fetched(room,get_your_id(self.props.room_id.as_str())),
             Msg::RoomNotExists => self.state = State::NotExists,
-            Msg::Start => start_room(&self.props.room_id)
+            Msg::Start => {
+                self.state = State::Loading;
+                start_room(&self.props.room_id);
+            }
         };
         true
     }
