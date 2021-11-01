@@ -11,14 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: use node build
-        id: node_build_chache
-        uses: actions/cache@v2
-        with:
-          path: dist
-          key: ${{ runner.os }}-nodebuild-${{ github.sha }}
       - name: Use cargo cache
-        if: steps.node_build_chache.outputs.cache-hit != 'true'
         uses: actions/cache@v2
         with:
           path: |
@@ -27,12 +20,10 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Build wasm
-        if: steps.node_build_chache.outputs.cache-hit != 'true'
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           wasm-pack build --release
       - name: Use node cache
-        if: steps.node_build_chache.outputs.cache-hit != 'true'
         uses: actions/cache@v2
         with:
           path: |
@@ -42,7 +33,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Node build
-        if: steps.node_build_chache.outputs.cache-hit != 'true'
         run: npm ci --production && npm run build
       - name: Deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
