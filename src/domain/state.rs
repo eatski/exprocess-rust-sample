@@ -1,5 +1,5 @@
 use exprocess::core::ExprocessCore;
-use rand::prelude::SliceRandom;
+use rand::{Rng, prelude::SliceRandom};
 use serde::{Deserialize, Serialize};
 
 type MemberId = String;
@@ -16,15 +16,16 @@ pub struct Role {
     pub name: String
 }
 
-
-pub struct AppState {
-    pub content: AppStateContent
-}
-
-pub enum AppStateContent {
+pub enum AppState {
     Blank,
     Standby(Vec<Member>),
     Picked(PickedState)
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        AppState::Blank
+    }
 }
 
 pub struct PickedState {
@@ -32,27 +33,29 @@ pub struct PickedState {
 }
 
 //FIXME ドメインモデルにつけて問題ない？
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Clone)]
 pub enum AppCommand {
     Init(Vec<Member>),
     Pick(PickCommand)
 }
 
-#[derive(Serialize, Deserialize)]
+
+type ItemAndHowMany<Item> = (usize,Item);
+#[derive(Serialize, Deserialize,Clone)]
 pub struct PickCommand {
-    pub roles: Vec<(usize,Role)>
+    pub roles: Vec<ItemAndHowMany<Role>>
 }
 
 //FIXME ドメインモデルにつけて問題ない？
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Clone)]
 pub enum AppResult {
     Init(Vec<Member>),
     Picked(PickResult)
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize,Clone)]
 pub struct PickResult {
-    picked: Vec<(usize,Role)>
+    picked: Vec<Role>
 }
 
 pub struct AppCore;
@@ -62,68 +65,70 @@ impl ExprocessCore for AppCore {
     type Result = AppResult;
 
     fn init() -> Self::State {
-        AppState {
-            content: AppStateContent::Blank
-        }
+        AppState::Blank
     }
 
-    fn resolve(prev: &Self::State,command: &Self::Command) -> Self::Result {
+    fn resolve(prev: &Self::State,command: Self::Command) -> Self::Result {
         match command {
             AppCommand::Init(members) => AppResult::Init(members.clone()),
-            AppCommand::Pick(pick) => {
-                match &prev.content {
-                    AppStateContent::Standby(members) => AppResult::Picked(pick_roles_to_members(&members,pick)),
+            AppCommand::Pick(command) => {
+                match prev {
+                    AppState::Standby(members) => AppResult::Picked(
+                        PickResult {
+                            picked: pick_roles_to_members(
+                                &members,
+                                command.roles,
+                                &mut rand::thread_rng()
+                            )
+                        }
+                    ),
                     _ => panic!(),
                 }
             },
         }
     }
 
-    fn reducer(prev: &mut Self::State, result: &Self::Result) {
-        prev.content = match result {
-            AppResult::Init(members) => AppStateContent::Standby(members.clone()),
+    fn reducer(prev: &mut Self::State, result: Self::Result) {
+        *prev = match result {
+            AppResult::Init(members) => AppState::Standby(members.clone()),
             AppResult::Picked(result) => {
-                match &prev.content {
-                    AppStateContent::Standby(members) => {
-                        AppStateContent::Picked(PickedState {
-                            picked: result.picked.iter().map(move |(index,role)| {
-                                let index = *index;
-                                let member = members.get(index).expect("Never");
-                                (member.clone(),role.clone())
-                            }).collect()
+                match prev {
+                    AppState::Standby(members) => {
+                        AppState::Picked(PickedState {
+                            picked: result
+                                .picked
+                                .into_iter()
+                                .map(move |role| (members.remove(0),role))
+                                .collect()
                         })
                     },
                     _ => todo!(),
                 }
             }
-        }
+        };
     }
 }
 
-fn shuffule<T>(vec:&mut Vec<T>) {
-    let mut rng = rand::thread_rng();
-    vec.shuffle(&mut rng);
-}
-
-fn pick_roles_to_members(members: &Vec<Member>,pick: &PickCommand) -> PickResult {
-    let mut roles : Vec<_> = pick.roles
+fn pick_roles_to_members<M,R : Clone,Rn: Rng>(
+    members: &Vec<M>,
+    roles: Vec<ItemAndHowMany<R>>,
+    mut rng: Rn
+) -> Vec<R> {
+    let mut roles : Vec<_>= roles
         .iter()
          // FIXME: なんかきもい
         .flat_map(|(num,role)| (vec![role]).repeat(*num))
-        .map(|r| r.clone())
         .collect();
-    shuffule(&mut roles);
-    let picked = (0..(members.len()))
-        .map (move |index| {
-            let role = roles
-                .get(index)
-                .expect("Roles Less than Members")
-                .clone();
-            (
-                index,
-                role
-            )
-        })
-        .collect();
-    PickResult {picked}
+    roles.shuffle(&mut rng);
+    (0..(members.len()))
+        .map (move |_| roles.remove(0).clone())
+        .collect()
+}
+
+#[test]
+fn test_pick_roles_to_members() {
+    let result = pick_roles_to_members(
+        &vec!["a","b","c"],vec![(2,"x"),(1,"y")],rand::rngs::mock::StepRng::new(0, 1)
+    );
+    assert_eq!(result,["x","y","x"])
 }

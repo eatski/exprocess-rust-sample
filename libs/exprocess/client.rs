@@ -31,7 +31,7 @@ type Shared<T> = Rc<RefCell<T>>;
 fn shared<T>(content:T) -> Shared<T> { Rc::new(RefCell::new(content))}
 
 //FIXME: ちゃんとやる
-impl <Core: ExprocessCore + 'static> Runner<Core> {
+impl <Core: ExprocessCore + 'static> Runner<Core> where Core::Result : Clone, Core::Command : Clone {
 
     pub fn start<Repo: Repository<Core> + 'static>(
         mut repository:Repo,
@@ -42,7 +42,7 @@ impl <Core: ExprocessCore + 'static> Runner<Core> {
         repository.sync(Box::new(move |records| {
             let mut shared = cloned.borrow_mut();
             for record in records.iter() {
-                Core::reducer(&mut shared ,record.result);
+                Core::reducer(&mut shared ,record.result.clone());
             }
             (listener)(records,&shared);
         }));
@@ -58,12 +58,12 @@ impl <Core: ExprocessCore + 'static> Runner<Core> {
          */ 
         let record = {
             let shared = self.state.borrow();
-            let result = Core::resolve(&shared, &command);
+            let result = Core::resolve(&shared, command.clone());
             let id = Uuid::new_v4().to_hyphenated().to_string();
             Record {
                 id,
                 result,
-                command:command,
+                command,
             }
         };
         self.repository.push(record);
