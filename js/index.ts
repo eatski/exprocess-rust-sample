@@ -22,10 +22,8 @@ export function fetchMembers(roomid:string,fn: (json:string) => void) {
     member.fetchMembers(roomid,fn);
 }
 
-export async function createRoom(roomId:string,hostUserName:string,callback:(roomId:string) => void) {
-    const hostId = await member.registerMember(roomId,hostUserName);
-    await room.openRoom(roomId,hostId);
-    callback(roomId);
+export async function createRoom(roomId:string,hostUserName:string,callback:(callback:string) => void) {
+    room.createRoom(roomId,hostUserName).then(() => callback(roomId))
 }
 
 export function syncRoom(roomId:string,callback:(id:string | null) => void) : () => void {
