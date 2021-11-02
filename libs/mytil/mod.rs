@@ -1,4 +1,4 @@
-use std::{cell::{RefCell}, fmt::Display, rc::{Rc}};
+use std::{cell::{RefCell}, collections::HashSet, hash::Hash, fmt::Display, rc::{Rc}};
 
 use crate::testing::Counter;
 
@@ -123,4 +123,20 @@ fn _test_call_while_living() {
 pub fn call_while_living<T : 'static,CB: FnMut(&T) + 'static>(target: &Rc<T>,mut call: CB) -> Box<dyn FnMut()> {
     let weak = Rc::downgrade(&target);
     Box::new(move || { weak.upgrade().map(|target| call(&target)); })
+}
+
+#[test]
+fn test_validate_no_duplicate() {
+    assert_eq!(validate_no_duplicate(&vec!["hoge","fuga"],|item| item),true);
+    assert_eq!(validate_no_duplicate(&vec!["hoge","fuga","hoge"],|item| item),false);
+}
+pub fn validate_no_duplicate<'a,I,T : Hash + Eq,F:Fn(&'a I) -> T>(inputs: &'a Vec<I>,get_key: F) -> bool {
+    inputs.iter().map(get_key).scan(HashSet::with_capacity(inputs.len()), |state,item| {
+        if state.contains(&item) {
+            Some(false)
+        } else {
+            state.insert(item);
+            Some(true)
+        }
+    }).all(|item| item)
 }
