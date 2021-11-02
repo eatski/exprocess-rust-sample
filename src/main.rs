@@ -14,38 +14,63 @@ use pages::{
 mod switch;
 use switch::{AppRoute, AppRouter, PublicUrlSwitch};
 
+use crate::components::loading::loading;
+
 pub enum Msg {
     Sleep,
-    ReBoot
+    ReBoot,
+    Load,
+    StopLoading
 }
 
 pub struct App {
-    sleep: bool,
+    state: State,
     link: ComponentLink<Self>
 }
+
+pub enum GlobalMessage {
+    Load,
+    StopLoading
+}
+
+pub enum State {
+    Sleep,Loading,Active
+}
+
 impl Component for App {
     type Message = Msg;
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+
         Self {
-            sleep: false,
-            link
+            state: State::Active,
+            link,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::Sleep => {
-                self.sleep = true;
-                true
+                self.state = State::Sleep;
+                
             },
             Msg::ReBoot => {
-                self.sleep = false;
+                if matches!(self.state,State::Sleep) {
+                    self.state = State::Active;
+                };
                 self.set_timer();
-                true
             },
-        }
+            Msg::Load => {
+                self.state = State::Loading;
+            },
+            Msg::StopLoading => {
+                if matches!(self.state,State::Loading) {
+                    self.state = State::Active;
+                };
+            },
+        };
+        true
     }
 
     fn rendered(&mut self, first_render: bool) {
@@ -67,36 +92,44 @@ impl Component for App {
                     
                 </header>
                 <main>
-                    {if self.sleep {
-                        html! {
-                            <main>
-                                <h2>{"Are You Sleeping?"}</h2>
-                                <button onclick={self.link.callback(|_| Msg::ReBoot)}>{"Restart"}</button>
-                            </main>
-                            
-                        }
-                    } else {
-                        html! {
-                            <AppRouter
-                                render=AppRouter::render(Self::switch)
-                                redirect=AppRouter::redirect(|_| panic!())
-                            />
-                        }
+                    {match self.state {
+                        State::Sleep => {
+                            html! {
+                                <main>
+                                    <h2>{"Are You Sleeping? ///...zzz "}</h2>
+                                    <button onclick={self.link.callback(|_| Msg::ReBoot)}>{"Restart"}</button>
+                                </main>
+                            }
+                        },
+                        State::Loading => loading(),
+                        State::Active => {
+                            let dispatch_global = self.link.callback(|loading| {
+                                match loading {
+                                    GlobalMessage::Load => Msg::Load,
+                                    GlobalMessage::StopLoading => Msg::StopLoading,
+                                }
+                            });
+                            html! {
+                                <AppRouter
+                                    render=AppRouter::render(move |switch| Self::switch(switch, dispatch_global.clone()))
+                                    redirect=AppRouter::redirect(|_| panic!())
+                                />
+                            }
+                        },
                     }}
-                    
                 </main>
             </>
         }
     }
 }
 impl App {
-    fn switch(switch: PublicUrlSwitch) -> Html {
+    fn switch(switch: PublicUrlSwitch,dispatch_global: Callback<GlobalMessage> ) -> Html {
         match switch.route() {
             AppRoute::Home => {
-                html! { <Home /> }
+                html! { <Home dispatch_global=dispatch_global /> }
             }
             AppRoute::Room(room_id) => {
-                html! { <Room room_id=room_id/> }
+                html! { <Room room_id=room_id dispatch_global=dispatch_global/> }
             }
         }
     }

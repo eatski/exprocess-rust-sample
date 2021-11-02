@@ -51,7 +51,7 @@ pub struct Member<'a> {
     pub you: bool
 }
 
-pub fn create_room(hostname: &str,callback : Box<dyn FnMut()>) -> String {
+pub fn create_room(hostname: &str,callback : Box<dyn FnMut(String)>) {
     let mut generator = Generator::with_naming(Name::Numbered);
     let room_id = generator.next().unwrap();
     js_bridge::create_room(
@@ -59,7 +59,6 @@ pub fn create_room(hostname: &str,callback : Box<dyn FnMut()>) -> String {
         hostname,
         Closure::into_js_value(Closure::once (callback))
     );
-    room_id
 }
 
 pub enum Phase {

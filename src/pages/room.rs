@@ -1,4 +1,5 @@
 use yew::prelude::*;
+use crate::GlobalMessage;
 use crate::components::{loading::loading,not_found::not_found};
 use crate::containers::main::Main;
 use crate::repository::{sync_room,Room as RoomData,Phase,start_room,get_your_id};
@@ -23,9 +24,10 @@ pub enum Msg {
     Start
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Properties)]
+#[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
-    pub room_id: String
+    pub room_id: String,
+    pub dispatch_global: Callback<GlobalMessage>
 }
 
 impl Component for Room {
