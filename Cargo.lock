@@ -421,6 +421,7 @@ dependencies = [
  "js-sys",
  "lipsum",
  "log",
+ "mytil",
  "names",
  "rand 0.8.4",
  "serde",

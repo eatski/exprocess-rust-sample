@@ -1,5 +1,6 @@
-use std::{ops::Add, vec};
+use std::{vec};
 
+use mytil::validate_no_duplicate;
 use yew::{prelude::*, virtual_dom::VNode};
 
 use crate::domain::state::{PickCommand,Role};
@@ -65,7 +66,9 @@ impl Component for HostForm {
                     .unwrap();
                 input.name = name;
             },
-            Msg::AddInput => todo!(),
+            Msg::AddInput => {
+                self.inputs.push(RoleInput {name:String::from(""),num:1})
+            },
         }
         true
     }
@@ -82,13 +85,20 @@ impl Component for HostForm {
             .iter()
             .enumerate()
             .map(move |(index,role_input)| role_input_view(role_input,&link,index));
-        let valid = (self.inputs.iter().map(|input| input.num).fold(0, Add::add )) == self.props.members_num;
+        let nums_gt_players = (self.inputs.iter().map(|input| input.num).sum::<usize>()) >= self.props.members_num;
+        let names_no_duplicate = validate_no_duplicate(&self.inputs,|role| role.name.as_str());
+        let names_no_empty = self.inputs.iter().all(|role| !role.name.is_empty());
+        let add_input = self.link.callback_once(|_| Msg::AddInput);
         html! {
             <div>
                 <ul>
                     {for inputs}
                 </ul>
-                { if valid {
+                <div>
+                    <button onclick=add_input>{"Add Role"}</button>
+                </div>
+                { 
+                    if nums_gt_players && names_no_duplicate && names_no_empty {
                     let command = PickCommand {
                         roles: self.inputs.iter()
                             .map(|input| (input.num, Role {name: input.name.clone()}))
@@ -99,7 +109,10 @@ impl Component for HostForm {
                     html! {
                         <button onclick=onclick>{"Roll!!"}</button>
                     }
-                } else {html! {}} }
+                } else {
+                    html! { }
+                }
+            }
             </div>
         }
     }
@@ -117,19 +130,17 @@ fn role_input_view(input:&RoleInput,link: &ComponentLink<HostForm>,index: usize)
             _ => panic!()
         }
     });
-    let on_name_change = link.callback(move |change| {
-        match change {
-            ChangeData::Value(name) => Msg::UpdateName {
-                index,
-                name
-            },
-            _ => panic!()
+    let on_name_change = link.callback(move |input: InputData| {
+        Msg::UpdateName {
+            name:input.value,
+            index
         }
     });
     html! {
         <li>
-            <input type="text" value=name onchange=on_name_change />
+            <input type="text" value=name oninput=on_name_change />
             <input type="number" value=num min=1 onchange=on_num_change/>
         </li>
     }
 }
+
