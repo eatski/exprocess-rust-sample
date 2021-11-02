@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{components::loading::loading, containers::host_form::HostForm, domain::{Runner, start, state::AppCommand, state::{AppStateContent}, state::Member, state::PickCommand, state::Role}, repository::{fetch_members}};
+use crate::{components::loading::loading, containers::host_form::HostForm, domain::{Runner, start, state::AppCommand, state::{AppState}, state::Member, state::PickCommand, state::Role}, repository::{fetch_members}};
 
 pub struct Main {
     runner:Runner,
@@ -18,10 +18,10 @@ pub enum ViewState {
 }
 
 
-fn app_state_to_view_state(app:&AppStateContent,is_host: bool, link: &ComponentLink<Main>) -> ViewState {
+fn app_state_to_view_state(app:&AppState,is_host: bool, link: &ComponentLink<Main>) -> ViewState {
     match app {
-        AppStateContent::Blank => ViewState::Blank,
-        AppStateContent::Standby(members) => ViewState::Standby { 
+        AppState::Blank => ViewState::Blank,
+        AppState::Standby(members) => ViewState::Standby { 
             members:members.iter().map(|m| m.name.clone()).collect(),
             host_form: if is_host { 
                 Option::Some(
@@ -31,7 +31,7 @@ fn app_state_to_view_state(app:&AppStateContent,is_host: bool, link: &ComponentL
                 Option::None 
             }
         },
-        AppStateContent::Picked(picked) => ViewState::Picked (
+        AppState::Picked(picked) => ViewState::Picked (
             picked.picked.iter().map(|(m,r)| (m.clone(),r.clone())).collect()
         ),
     }
@@ -59,7 +59,7 @@ impl Component for Main {
         let runner = start (
             props.room_id.clone(),
             Box::new(move |_,state| {
-                let state = app_state_to_view_state(&state.content,is_host,&link_cloned);
+                let state = app_state_to_view_state(&state,is_host,&link_cloned);
                 link_cloned.send_message(Msg::UpdateState(state))
             })
         );

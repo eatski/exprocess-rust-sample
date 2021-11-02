@@ -16,15 +16,16 @@ pub struct Role {
     pub name: String
 }
 
-
-pub struct AppState {
-    pub content: AppStateContent
-}
-
-pub enum AppStateContent {
+pub enum AppState {
     Blank,
     Standby(Vec<Member>),
     Picked(PickedState)
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        AppState::Blank
+    }
 }
 
 pub struct PickedState {
@@ -64,17 +65,15 @@ impl ExprocessCore for AppCore {
     type Result = AppResult;
 
     fn init() -> Self::State {
-        AppState {
-            content: AppStateContent::Blank
-        }
+        AppState::Blank
     }
 
     fn resolve(prev: &Self::State,command: Self::Command) -> Self::Result {
         match command {
             AppCommand::Init(members) => AppResult::Init(members.clone()),
             AppCommand::Pick(command) => {
-                match &prev.content {
-                    AppStateContent::Standby(members) => AppResult::Picked(
+                match prev {
+                    AppState::Standby(members) => AppResult::Picked(
                         PickResult {
                             picked: pick_roles_to_members(
                                 &members,
@@ -90,12 +89,12 @@ impl ExprocessCore for AppCore {
     }
 
     fn reducer(prev: &mut Self::State, result: Self::Result) {
-        prev.content = match result {
-            AppResult::Init(members) => AppStateContent::Standby(members.clone()),
+        *prev = match result {
+            AppResult::Init(members) => AppState::Standby(members.clone()),
             AppResult::Picked(result) => {
-                match &mut prev.content {
-                    AppStateContent::Standby(members) => {
-                        AppStateContent::Picked(PickedState {
+                match prev {
+                    AppState::Standby(members) => {
+                        AppState::Picked(PickedState {
                             picked: result
                                 .picked
                                 .into_iter()
