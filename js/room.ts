@@ -1,15 +1,29 @@
-import { collection,doc,onSnapshot,setDoc,runTransaction } from "firebase/firestore";
+import { collection,doc,onSnapshot,setDoc,runTransaction, writeBatch } from "firebase/firestore";
 import { getStore } from "./firestore";
-import { getYourId } from "./yourid";
+import { getYourId, setYourId } from "./yourid";
 
-export const openRoom = async (roomId:string,hostMemberId: string):Promise<void> => {
+/**
+ * FIXME: バッチのせいで色々ごちゃってる
+ * @param roomId 
+ * @param hostUserName 
+ */
+export const createRoom = async (roomId:string,hostUserName:string):Promise<void> => {
     const db = getStore();
     const rooms = collection(db,"rooms");
     const room = doc(rooms,roomId);
-    await setDoc(room,{
-        phase:"MEETING",
-        host: hostMemberId
+    const members = collection(room,"members");
+    const hostMember = doc(members);
+    const batch = writeBatch(db);
+    batch.set(hostMember,{
+        name: hostUserName
     });
+    batch.set(room, {
+        phase:"MEETING",
+        host: hostMember.id
+    })
+    // commit こけた時のハンドリング 本音を言うとコミット成功判定とローカルDB書き換えの間に実行したいぽよ
+    setYourId(roomId,hostMember.id);
+    await batch.commit();
 }
 
 export const syncRoom = (roomId:string,listener:(roomData:string | null) => void): () => void => {
