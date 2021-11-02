@@ -73,11 +73,11 @@ impl ExprocessCore for TestCore {
         todo!()
     }
 
-    fn resolve(_prev: &Self::State, _command: &Self::Command) -> Self::Result {
+    fn resolve(_prev: &Self::State, _command: Self::Command) -> Self::Result {
         todo!()
     }
 
-    fn reducer(_prev: &mut Self::State, _result: &Self::Result) {
+    fn reducer(_prev: &mut Self::State, _result: Self::Result) {
         todo!()
     }
 
