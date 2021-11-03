@@ -5,10 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "cargo test --workspace",
-    "build": "webpack",
-    "dev": "BUILD_MODE=dev webpack --watch & npm run emu",
+    "dev": "wasm-pack build && BUILD_MODE=dev webpack",
     "emu": "firebase emulators:start",
-    "wasm": "wasm-pack build"
+    "wasm": "wasm-pack build --release"
   },
   "repository": {
     "type": "git",
