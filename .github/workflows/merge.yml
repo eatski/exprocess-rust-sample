@@ -33,7 +33,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Node build
-        run: npm ci --production && npm run build
+        run: npm ci --production && npx webpack
       - name: Deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
