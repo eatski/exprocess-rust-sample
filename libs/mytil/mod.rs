@@ -3,20 +3,22 @@ use std::{cell::{RefCell}, collections::HashSet, hash::Hash, fmt::Display, rc::{
 use crate::testing::Counter;
 
 pub mod testing {
+    use std::cell::Cell;
+
     use super::*;
 
     #[derive(Debug,Clone,Default,PartialEq)]
     pub struct Counter {
-        num: Rc<RefCell<usize>>,
+        num: Rc<Cell<usize>>,
     }
 
     impl Counter {
         pub fn count(&self) {
-            let cur = *self.num.borrow();
+            let cur = self.num.get();
             self.num.replace(cur + 1);
         }
         pub fn get(&self) -> usize {
-            *self.num.borrow()
+            self.num.get()
         }
         pub fn map<T, F: FnOnce(Self) -> T>(&self, func: F) -> T {
             func(self.clone())
@@ -28,13 +30,13 @@ pub mod testing {
 
     impl PartialEq<usize> for Counter {
         fn eq(&self, other: &usize) -> bool {
-            *self.num.borrow() == *other
+            self.get() == *other
         }
     }
 
     impl Display for Counter {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "{}", *self.num.borrow())
+            write!(f, "{}", self.get())
         }
     }
 

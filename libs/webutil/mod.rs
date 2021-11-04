@@ -32,7 +32,7 @@ pub mod window {
 }
 
 pub mod util {
-    use std::{cell::{RefCell}, rc::Rc};
+    use std::{cell::{Cell, RefCell}, rc::Rc};
 
     use crate::window::add_eventlistener;
 
@@ -41,9 +41,9 @@ pub mod util {
      * callbackを発火し、一定期間そのcallbackの実行を止める
      */
     pub fn stop_interval(mut callback:Box<dyn FnMut()>,interval: u32) -> Box<dyn FnMut()> {
-        let stopping = Rc::new(RefCell::new(false));
+        let stopping = Rc::new(Cell::new(false));
         Box::new(move || {
-            if !*stopping.borrow() {
+            if !stopping.get() {
                 callback();
                 stopping.replace(true);
                 let stopping = stopping.clone();
