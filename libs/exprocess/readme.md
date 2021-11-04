@@ -7,8 +7,7 @@ Exprcess provides a thin framework for declaratively describing the logic of sta
 - Provides easy state reconstruction and Redo/Undo operations.
 
 ## Let's take a look at the simple code.
-Let's take a look at the core of Exprcess.  
-[Source code](/libs/exprocess/core.rs)
+Let's take a look at the core of Exprcess.[code](/libs/exprocess/core.rs)  
 Exprocess provides a trait called ExprocessCore. This trait requires the implementation of the following three functions.  
 - init
 - resolve
