@@ -34,10 +34,7 @@ The front-end is designed so that the roles are only visible to the assigned par
 ## Let's take a look at the code.
 Now that I've explained it, you should be able to see it in the code.  
 The following is a list of some of the key points.
-### Core  
-[/src/domain/state.rs]()
-
-### Runner Use
-[/src/containers/main.rs]()
+- [Core Logic](/src/domain/state.rs)
+- [Use Runner](/src/containers/main.rs)
 
 
