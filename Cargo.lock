@@ -277,6 +277,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "manifest"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "memchr"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -421,6 +429,7 @@ dependencies = [
  "js-sys",
  "lipsum",
  "log",
+ "manifest",
  "mytil",
  "names",
  "rand 0.8.4",

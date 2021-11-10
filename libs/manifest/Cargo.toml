@@ -1,0 +1,12 @@
+[package]
+name = "manifest"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+crate-type = ["proc-macro"]
+path = "mod.rs"
+
+[dependencies]
+syn = { version = "1.0.14", features = ["full", "extra-traits"] }
+quote = "1.0.2"
