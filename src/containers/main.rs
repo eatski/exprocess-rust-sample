@@ -32,7 +32,7 @@ fn app_state_to_view_state(app:&AppState,is_host: bool, link: &ComponentLink<Mai
             }
         },
         AppState::Picked(picked) => ViewState::Picked (
-            picked.picked.iter().map(|(m,r)| (m.clone(),r.clone())).collect()
+            picked.picked.iter().cloned().collect()
         ),
     }
 }

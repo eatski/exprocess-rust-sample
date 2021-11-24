@@ -86,7 +86,7 @@ impl Component for HostForm {
             .enumerate()
             .map(move |(index,role_input)| role_input_view(role_input,&link,index));
         let nums_gt_players = (self.inputs.iter().map(|input| input.num).sum::<usize>()) >= self.props.members_num;
-        let names_no_duplicate = validate_no_duplicate(&self.inputs,|role| role.name.as_str());
+        let names_no_duplicate = validate_no_duplicate(self.inputs.iter().map(|role| role.name.as_str()));
         let names_no_empty = self.inputs.iter().all(|role| !role.name.is_empty());
         let add_input = self.link.callback_once(|_| Msg::AddInput);
         html! {
