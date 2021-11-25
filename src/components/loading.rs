@@ -1,6 +1,6 @@
-use yew::{html, virtual_dom::VNode};
+use yew::{Html, html};
 
-pub fn loading() -> VNode{
+pub fn loading() -> Html{
     html! {
         <img src="/assets/loading.svg"/>
     }

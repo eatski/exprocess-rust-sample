@@ -1,5 +1,4 @@
 use yew::prelude::*;
-use yew::virtual_dom::VNode;
 use crate::components::text_input::Input;
 
 use crate::components::loading::loading;
@@ -8,7 +7,7 @@ use crate::switch::AppRoute;
 
 // Common
 
-fn members_view(members:&Vec<Member>)-> VNode {
+fn members_view(members:&Vec<Member>)-> Html {
     let members = members.iter().map(|member| html! {
         <li>
             <span>{&member.name}</span>
