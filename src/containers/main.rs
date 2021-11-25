@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{components::loading::loading, containers::host_form::HostForm, domain::{Runner, start, state::AppCommand, state::{AppState}, state::Member, state::PickCommand, state::Role}, repository::{fetch_members}};
+use crate::{components::loading::loading, containers::host_form::HostForm, domain::{Runner, repository::RepositoryError, start, state::AppCommand, state::{AppState}, state::Member, state::PickCommand, state::Role}, repository::{fetch_members}};
 
 pub struct Main {
     runner:Runner,
@@ -14,7 +14,12 @@ pub enum ViewState {
         members:Vec<String>,
         host_form: Option<Callback<PickCommand>>
     },
-    Picked (Vec<(Member,Role)>)
+    Picked (Vec<(Member,Role)>),
+    Error(ViewError)
+}
+
+pub enum ViewError {
+    DataAccess
 }
 
 
@@ -39,7 +44,8 @@ fn app_state_to_view_state(app:&AppState,is_host: bool, link: &ComponentLink<Mai
 
 pub enum Msg {
     UpdateState(ViewState),
-    PushCommand(AppCommand)
+    PushCommand(AppCommand),
+    Error(ViewError)
 } 
 
 #[derive(Clone,Eq,PartialEq,Properties)]
@@ -54,13 +60,23 @@ impl Component for Main {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let link_cloned = link.clone();
+        let link_listener = link.clone();
+        let link_on_error = link.callback(Msg::Error);
         let is_host = props.is_host;
         let runner = start (
             props.room_id.clone(),
             Box::new(move |_,state| {
-                let state = app_state_to_view_state(&state,is_host,&link_cloned);
-                link_cloned.send_message(Msg::UpdateState(state))
+                let state = app_state_to_view_state(&state,is_host,&link_listener);
+                link_listener.send_message(Msg::UpdateState(state))
+            }),
+            Box::new(move |err| {
+                match err {
+                    RepositoryError::UnExpected(err) => {
+                        log::error!("{}",err);
+                        link_on_error.emit(ViewError::DataAccess);
+                    },
+                }
+                
             })
         );
         Main {
@@ -89,6 +105,9 @@ impl Component for Main {
                 self.state = state
             },
             Msg::PushCommand(command) => self.runner.dispatch(command),
+            Msg::Error(error) => {
+                self.state = ViewState::Error(error);
+            },
         };
         true
     }
@@ -125,8 +144,6 @@ impl Component for Main {
                         </section>
                         {host_form_view}
                     </>
-                    
-                    
                 }
             },
             ViewState::Picked ( list ) => {
@@ -146,6 +163,11 @@ impl Component for Main {
                             {html! {<strong>{&your_role.name}</strong>}}
                         </p>
                     </section>
+                }
+            },
+            ViewState::Error(err) => {
+                match err {
+                    ViewError::DataAccess => crate::components::error::error(),
                 }
             },
         }
