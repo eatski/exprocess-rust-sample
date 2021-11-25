@@ -127,16 +127,16 @@ pub fn call_while_living<T : 'static,CB: FnMut(&T) + 'static>(target: &Rc<T>,mut
 
 #[test]
 fn test_validate_no_duplicate() {
-    assert_eq!(validate_no_duplicate(&vec!["hoge","fuga"],|item| item),true);
-    assert_eq!(validate_no_duplicate(&vec!["hoge","fuga","hoge"],|item| item),false);
+    assert_eq!(validate_no_duplicate(["hoge","fuga"].iter()),true);
+    assert_eq!(validate_no_duplicate(["hoge","fuga","hoge"].iter()),false);
 }
-pub fn validate_no_duplicate<'a,I,T : Hash + Eq,F:Fn(&'a I) -> T>(inputs: &'a Vec<I>,get_key: F) -> bool {
-    inputs.iter().map(get_key).scan(HashSet::with_capacity(inputs.len()), |state,item| {
+pub fn validate_no_duplicate<'a,T : Hash + Eq,Iter: Iterator<Item=T>>(iter: Iter) -> bool {
+    iter.scan(HashSet::new(), |state,item| {
         if state.contains(&item) {
             Some(false)
         } else {
             state.insert(item);
             Some(true)
         }
-    }).all(|item| item)
+    }).all(bool::from)
 }

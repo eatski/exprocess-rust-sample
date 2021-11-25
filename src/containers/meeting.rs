@@ -196,7 +196,7 @@ impl Component for MeetingHost {
                         members
                         .iter()
                         .map(|member| Member {id:String::from(member.id),name: String::from(member.name), you: member.you})
-                        .collect::<Vec<Member>>();
+                        .collect();
                     update.emit(members)
                 }
             )
