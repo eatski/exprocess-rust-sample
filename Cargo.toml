@@ -10,7 +10,8 @@ path = "src/main.rs"
 [workspace]
 members = [
     "libs/exprocess",
-    "libs/webutil"
+    "libs/webutil",
+    "libs/fofo"
 ]
 
 [dependencies]
