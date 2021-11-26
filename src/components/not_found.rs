@@ -1,6 +1,6 @@
-use yew::{html, virtual_dom::VNode};
+use yew::{Html, html};
 
-pub fn not_found() -> VNode{
+pub fn not_found() -> Html{
     html! {
         <div>{"Not Found"}</div>
     }

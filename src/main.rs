@@ -1,27 +1,34 @@
+use wasm_bindgen::prelude::*;
 use webutil::util::set_timeout_no_mousemove;
 use yew::prelude::*;
-use wasm_bindgen::prelude::*;
 
-mod repository;
 mod components;
 mod containers;
 mod domain;
 mod pages;
+mod repository;
 
-use pages::{
-    home::Home,room::Room,
-};
+use pages::{home::Home, room::Room};
 mod switch;
 use switch::{AppRoute, AppRouter, PublicUrlSwitch};
 
+use crate::components::error;
+
 pub enum Msg {
     Sleep,
-    ReBoot
+    ReBoot,
+    Error,
+}
+
+pub enum State {
+    Sleep,
+    Error,
+    Ok,
 }
 
 pub struct App {
-    sleep: bool,
-    link: ComponentLink<Self>
+    state: State,
+    link: ComponentLink<Self>,
 }
 impl Component for App {
     type Message = Msg;
@@ -29,27 +36,36 @@ impl Component for App {
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            sleep: false,
-            link
+            state: State::Ok,
+            link,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        match msg {
-            Msg::Sleep => {
-                self.sleep = true;
+        match (msg, &self.state) {
+            (Msg::Sleep, State::Ok) => {
+                self.state = State::Sleep;
                 true
-            },
-            Msg::ReBoot => {
-                self.sleep = false;
+            }
+            (Msg::ReBoot, State::Sleep) => {
+                self.state = State::Ok;
                 self.set_timer();
                 true
-            },
+            }
+            (_, State::Error) => false,
+            (Msg::Sleep, State::Sleep) => false,
+            (Msg::ReBoot, State::Ok) => false,
+            (Msg::Error, _) => {
+                self.state = State::Error;
+                true
+            }
         }
     }
 
     fn rendered(&mut self, first_render: bool) {
-        if first_render { self.set_timer();}
+        if first_render {
+            self.set_timer();
+        }
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
@@ -64,45 +80,58 @@ impl Component for App {
                         <img src="/assets/favicon.ico" />
                         <strong>{"Roll Role"}</strong>
                     </a>
-                    
+
                 </header>
                 <main>
-                    {if self.sleep {
-                        html! {
-                            <main>
-                                <h2>{"Are You Sleeping?"}</h2>
-                                <button onclick={self.link.callback(|_| Msg::ReBoot)}>{"Restart"}</button>
-                            </main>
-                            
+                    {
+                        match self.state {
+                            State::Sleep => html! {
+                                <main>
+                                    <h2>{"Are You Sleeping?"}</h2>
+                                    <button onclick={self.link.callback(|_| Msg::ReBoot)}>{"Restart"}</button>
+                                </main>
+                            },
+                            State::Error => error::error(),
+                            State::Ok => {
+                                let link = self.link.clone();
+                                let render = AppRouter::render(move |switch: PublicUrlSwitch| {
+                                    // let on_error = link.callback(|_| Msg::Error);
+                                    let on_error = Callback::from(|_| {
+                                        panic!()
+                                    });
+                                    match switch.route() {
+                                        AppRoute::Home => {
+                                            html! { <Home on_error=on_error/> }
+                                        }
+                                        AppRoute::Room(room_id) => {
+                                            html! { <Room room_id=room_id on_error=on_error/> }
+                                        }
+                                    }
+                                }); 
+                                html! {
+                                    <AppRouter
+                                        render=render
+                                        redirect=AppRouter::redirect(|_| panic!())
+                                    />
+                                }
+                            }
                         }
-                    } else {
-                        html! {
-                            <AppRouter
-                                render=AppRouter::render(Self::switch)
-                                redirect=AppRouter::redirect(|_| panic!())
-                            />
-                        }
-                    }}
-                    
+                    }
                 </main>
             </>
         }
     }
 }
 impl App {
-    fn switch(switch: PublicUrlSwitch) -> Html {
-        match switch.route() {
-            AppRoute::Home => {
-                html! { <Home /> }
-            }
-            AppRoute::Room(room_id) => {
-                html! { <Room room_id=room_id/> }
-            }
-        }
-    }
     fn set_timer(&mut self) {
         let sleep = self.link.callback(|_| Msg::Sleep);
-        drop(set_timeout_no_mousemove(move || {sleep.emit(());}, 1000 * 60 * 30, 1000));
+        drop(set_timeout_no_mousemove(
+            move || {
+                sleep.emit(());
+            },
+            1000 * 60 * 30,
+            1000,
+        ));
     }
 }
 
@@ -122,6 +151,7 @@ pub fn main() {
 }
 
 #[wasm_bindgen]
-pub enum AppMode{
-    Dev,Production
+pub enum AppMode {
+    Dev,
+    Production,
 }

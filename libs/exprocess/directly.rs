@@ -1,29 +1,30 @@
-use std::{cell::{RefCell, RefMut}, collections::HashSet, rc::Rc};
+use std::{cell::{RefCell, RefMut}, collections::HashSet, marker::PhantomData, rc::Rc};
 
 use crate::core::ExprocessCore;
 
 use super::client::{Record, RecordSync, Repository};
-pub struct DirectlyDispatch<Core: ExprocessCore,Inner: Repository<Core>> {
+pub struct DirectlyDispatch<Core: ExprocessCore,Err,Inner: Repository<Core,Err>> {
     inner: Inner,
     listener: Shared<Box<dyn FnMut(Vec<RecordSync<Core>>)>>,
-    used_id: SharedUsedId
+    used_id: SharedUsedId,
+    marker: PhantomData<Err>
 }
 
 type Shared<T> = Rc<RefCell<T>>;
 
 type SharedUsedId = Shared<HashSet<String>>;
 
-impl <Core: ExprocessCore + 'static,Inner: Repository<Core>> Repository<Core> for DirectlyDispatch<Core,Inner> {
+impl <Core: ExprocessCore + 'static,Err,Inner: Repository<Core,Err>> Repository<Core,Err> for DirectlyDispatch<Core,Err,Inner> {
 
-    fn push(&mut self,record: Record<Core>) {
+    fn push(&mut self,record: Record<Core>) -> Result<(), Err> {
         let records = 
             vec![RecordSync {id: record.id.as_str(),command: &record.command, result: &record.result}];
         (self.listener.borrow_mut())(records);
         self.used_id.borrow_mut().insert(record.id.clone());
-        self.inner.push(record);
+        self.inner.push(record)
     }
 
-    fn sync(&mut self,listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>) {
+    fn sync(&mut self,listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>,on_error: Box<dyn FnMut(Err)>) {
         let used_id = self.used_id.clone();
         let shared_listener = shared(listener);
         let listener = shared_listener.clone();
@@ -32,21 +33,23 @@ impl <Core: ExprocessCore + 'static,Inner: Repository<Core>> Repository<Core> fo
             let used_id = used_id.borrow_mut();
             let records = limit_records(records, used_id);
             listener(records);
-        }));
+        }),on_error);
         self.listener = shared_listener;
     }
-
+    
     fn unsync(&mut self) {
         self.inner.unsync();
     }
+
 }
 
-impl <Core: ExprocessCore,Inner: Repository<Core>> DirectlyDispatch<Core,Inner> {
+impl <Core: ExprocessCore,Err,Inner: Repository<Core,Err>> DirectlyDispatch<Core,Err,Inner> {
     pub fn wrap(inner: Inner) -> Self {
         Self {
             inner,
             listener: shared(Box::new(|_|panic!("No Listener"))),
-            used_id: shared(HashSet::new())
+            used_id: shared(HashSet::new()),
+            marker: PhantomData
         }
     }
 }

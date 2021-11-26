@@ -23,9 +23,10 @@ pub enum Msg {
     Start
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Properties)]
+#[derive(Clone, Debug, Properties)]
 pub struct Props {
-    pub room_id: String
+    pub room_id: String,
+    pub on_error: Callback<()>
 }
 
 impl Component for Room {
@@ -38,7 +39,8 @@ impl Component for Room {
             Msg::RoomNotExists => self.state = State::NotExists,
             Msg::Start => {
                 self.state = State::Loading;
-                start_room(&self.props.room_id);
+                let on_error = self.props.on_error.clone();
+                start_room(&self.props.room_id,Box::new(move || on_error.clone().emit(())));
             }
         };
         true
@@ -57,10 +59,10 @@ impl Component for Room {
             State::Loading => loading(),
             State::Fetched(room,your_id) => match room.phase {
                 Phase::Meeting =>  if !room.is_host {
-                    html! {<Meeting room_id=self.props.room_id.clone()/>}
+                    html! {<Meeting room_id=self.props.room_id.clone() on_error=self.props.on_error.clone()/>}
                 } else {
                     let start = self.link.callback(|_| Msg::Start);
-                    html! {<MeetingHost room_id=self.props.room_id.clone() start=start/>}
+                    html! {<MeetingHost room_id=self.props.room_id.clone() start=start on_error=self.props.on_error.clone()/>}
                 },
                 Phase::Started => match your_id {
                     Some(your_id) => html! {
@@ -68,6 +70,7 @@ impl Component for Room {
                             is_host=room.is_host 
                             room_id=self.props.room_id.clone()
                             your_id=your_id.clone()
+                            on_error=self.props.on_error.clone()
                         />
                     },
                     None => not_found(),
@@ -88,9 +91,11 @@ impl Component for Room {
         let callback = link.callback(
              |room : Option<RoomData>| room.map_or(Msg::RoomNotExists, Msg::UpdateRoom)
         );
+        let on_error = props.on_error.clone();
         let on_destroy = sync_room(
             room_id, 
-            Box::new(move |room| callback.emit(room))
+            Box::new(move |room| callback.emit(room)),
+            Box::new(move || on_error.clone().emit(()))
         );
         Self {
             state: State::Loading,

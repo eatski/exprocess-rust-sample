@@ -13,8 +13,8 @@ struct MemberJSON<'a> {
     pub you: bool
 }
 
-pub fn register_member(room_id: &str,name: &str) {
-    js_bridge::register_member(room_id,name)
+pub fn register_member(room_id: &str,name: &str,on_error: Box<dyn FnMut()>) {
+    js_bridge::register_member(room_id,name,on_error)
 }
 
 fn json_to_members<'a>(json:&'a String) -> Vec<Member<'a>> {
@@ -25,23 +25,26 @@ fn json_to_members<'a>(json:&'a String) -> Vec<Member<'a>> {
             .collect::<Vec<Member>>()
 }
 
-pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>) -> ()>) -> Box<dyn FnOnce()>{
+pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()>{
     let json_callback : Box<dyn Fn(String)>= Box::new(
         move |json:String| callback(json_to_members(&json))
     );
     jsfunction_to_function(js_bridge::sync_member(
         room_id, 
-        Closure::into_js_value(Closure::wrap(json_callback))
+        Closure::wrap(json_callback).into_js_value(),
+        Closure::wrap(on_error).into_js_value(),
     ))
 }
 
-pub fn fetch_members(room_id: &str,callback:Box<dyn FnOnce(Vec<Member>) -> ()>) {
+pub fn fetch_members(room_id: &str,callback:Box<dyn FnOnce(Vec<Member>)>,on_error: Box<dyn FnMut()>) {
     let json_callback : Box<dyn FnOnce(String)>= Box::new(
         move |json:String| callback(json_to_members(&json))
     );
     js_bridge::fetch_members( 
         room_id, 
-        Closure::into_js_value(Closure::once(json_callback))
+        Closure::once(json_callback).into_js_value(),
+        Closure::wrap(on_error).into_js_value(),
+
     )
 }
 
@@ -51,13 +54,14 @@ pub struct Member<'a> {
     pub you: bool
 }
 
-pub fn create_room(hostname: &str,callback : Box<dyn FnMut()>) -> String {
+pub fn create_room(hostname: &str,callback : Box<dyn FnOnce()>,on_error: Box<dyn FnMut()>) -> String {
     let mut generator = Generator::with_naming(Name::Numbered);
     let room_id = generator.next().unwrap();
     js_bridge::create_room(
         room_id.as_str(),
         hostname,
-        Closure::into_js_value(Closure::once (callback))
+        Closure::once (callback).into_js_value(),
+        Closure::wrap (on_error).into_js_value()
     );
     room_id
 }
@@ -79,7 +83,7 @@ pub struct RoomJSON<'a> {
     pub is_host: bool  
 }
 
-pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) -> Box<dyn FnOnce()> {
+pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()> {
     let callback = Box::new(move |room: Option<String>| {
         let room = room.map(|room| -> Room {
             let room: RoomJSON = serde_json::from_str(room.as_str()).expect("JSON Parse Error");
@@ -96,12 +100,13 @@ pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>) -> ()>) -> Box<
     });
     js_bridge::sync_room(
         room_id, 
-        callback
+        callback,
+        on_error
     )
 }
 
-pub fn start_room(room_id: &str) {
-    js_bridge::start_room(room_id);
+pub fn start_room(room_id: &str,on_error: Box<dyn FnMut()>) {
+    js_bridge::start_room(room_id,Closure::wrap (on_error).into_js_value());
 }
 
 pub struct RecordPushIO<'a> {
@@ -110,12 +115,18 @@ pub struct RecordPushIO<'a> {
     pub result: &'a str
 }
 
-pub fn push_record(room_id: &str,record: RecordPushIO) {
-    js_bridge::push_record(room_id,record.id,record.command,record.result)
+pub fn push_record(room_id: &str,record: RecordPushIO,on_error: Box<dyn FnMut()>) {
+    js_bridge::push_record(
+        room_id,
+        record.id,
+        record.command,
+        record.result,
+        Closure::wrap (on_error).into_js_value()
+    )
 }
 
-pub fn sync_record_update<F: FnMut(String) + 'static>(room_id: &str,listener: F) -> Box<dyn FnOnce()> {
-    js_bridge::sync_record_update(room_id, Box::new(listener))
+pub fn sync_record_update<F: FnMut(String) + 'static,E: FnMut() + 'static>(room_id: &str,listener: F,on_error: E) -> Box<dyn FnOnce()> {
+    js_bridge::sync_record_update(room_id, Box::new(listener),Box::new(on_error))
 }
 
 pub fn get_your_id(room_id: &str) -> Option<String> {

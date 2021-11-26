@@ -1,7 +1,7 @@
 use std::{vec};
 
 use mytil::validate_no_duplicate;
-use yew::{prelude::*, virtual_dom::VNode};
+use yew::{prelude::*};
 
 use crate::domain::state::{PickCommand,Role};
 
@@ -118,7 +118,7 @@ impl Component for HostForm {
     }
 }
 
-fn role_input_view(input:&RoleInput,link: &ComponentLink<HostForm>,index: usize) -> VNode {
+fn role_input_view(input:&RoleInput,link: &ComponentLink<HostForm>,index: usize) -> Html {
     let num = input.num.to_string();
     let name = input.name.clone();
     let on_num_change = link.callback(move |change| {

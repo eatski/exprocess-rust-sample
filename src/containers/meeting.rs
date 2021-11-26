@@ -1,5 +1,4 @@
 use yew::prelude::*;
-use yew::virtual_dom::VNode;
 use crate::components::text_input::Input;
 
 use crate::components::loading::loading;
@@ -8,7 +7,7 @@ use crate::switch::AppRoute;
 
 // Common
 
-fn members_view(members:&Vec<Member>)-> VNode {
+fn members_view(members:&Vec<Member>)-> Html {
     let members = members.iter().map(|member| html! {
         <li>
             <span>{&member.name}</span>
@@ -54,7 +53,8 @@ enum FormState {
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
     pub room_id : String,
-    pub host: Option<Callback<()>>
+    pub host: Option<Callback<()>>,
+    pub on_error: Callback<()>
 }
 
 pub enum Msg {
@@ -68,6 +68,7 @@ impl Component for Meeting {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let update = link.callback(Msg::UpdateMember);
+        let on_error = props.on_error.clone();
         let on_destroy = sync_members(
             props.room_id.as_str(), 
             Box::new(
@@ -79,7 +80,8 @@ impl Component for Meeting {
                         .collect::<Vec<Member>>();
                     update.emit(members)
                 }
-            )
+            ),
+            Box::new(move || on_error.clone().emit(()))
         );
         Self {
             props,
@@ -110,9 +112,11 @@ impl Component for Meeting {
                     },
                     _ => panic!()
                 }
+                let on_error = self.props.on_error.clone();
                 register_member(
                     self.props.room_id.as_str(),
-                    name.as_str()
+                    name.as_str(),
+                    Box::new(move || on_error.emit(()))
                 );
                 true
             },
@@ -167,7 +171,8 @@ pub struct MeetingHost {
 #[derive(Clone, Properties)]
 pub struct PropsHost {
     pub room_id : String,
-    pub start: Callback<()>
+    pub start: Callback<()>,
+    pub on_error: Callback<()>,
 }
 
 enum StateHost {
@@ -188,6 +193,7 @@ impl Component for MeetingHost {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let update = link.callback(MsgHost::UpdateMember);
+        let on_error = props.on_error.clone();
         let on_destroy = sync_members(
             props.room_id.as_str(), 
             Box::new(
@@ -199,7 +205,8 @@ impl Component for MeetingHost {
                         .collect();
                     update.emit(members)
                 }
-            )
+            ),
+            Box::new(move || on_error.clone().emit(()))
         );
         Self {
             props,

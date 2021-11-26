@@ -1,5 +1,5 @@
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell,rc::Rc};
 
 use uuid::Uuid;
 
@@ -14,16 +14,17 @@ pub struct Record<Core: ExprocessCore> {
     pub result: Core::Result,
     pub id: String
 }
-pub trait Repository<Core: ExprocessCore> {
-    fn push(&mut self,record: Record<Core>);
-    fn sync(&mut self,listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>);
+pub trait Repository<Core: ExprocessCore,Err> {
+    fn push(&mut self,record: Record<Core>) -> Result<(),Err>;
+    fn sync(&mut self,listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>,on_error: Box<dyn FnMut(Err)>);
     fn unsync(&mut self);
 }
 
 pub type Listener<Core,State> = Box<dyn FnMut(Vec<RecordSync<Core>>,&State)>;
-pub struct Runner<Core: ExprocessCore> {
-    repository: Box<dyn Repository<Core>>,
-    state: Shared<Core::State>
+pub struct Runner<Core: ExprocessCore,Err> {
+    repository: Box<dyn Repository<Core,Err>>,
+    state: Shared<Core::State>,
+    on_error: Shared<Box<dyn FnMut(Err)>>
 }
 
 type Shared<T> = Rc<RefCell<T>>;
@@ -31,24 +32,31 @@ type Shared<T> = Rc<RefCell<T>>;
 fn shared<T>(content:T) -> Shared<T> { Rc::new(RefCell::new(content))}
 
 //FIXME: ちゃんとやる
-impl <Core: ExprocessCore + 'static> Runner<Core> where Core::Result : Clone, Core::Command : Clone {
+impl <Core: ExprocessCore + 'static,Err : 'static> Runner<Core,Err> where Core::Result : Clone, Core::Command : Clone {
 
-    pub fn start<Repo: Repository<Core> + 'static>(
+    pub fn start<Repo: Repository<Core,Err> + 'static>(
         mut repository:Repo,
-        mut listener: Listener<Core,Core::State>
+        mut listener: Listener<Core,Core::State>,
+        on_error: Box<dyn FnMut(Err)>
     ) -> Self {
         let shared_state = shared(Core::init());
         let cloned = shared_state.clone();
-        repository.sync(Box::new(move |records| {
+        let on_error = shared(on_error);
+        let cloned_on_err = on_error.clone();
+        repository.sync(
+            Box::new(move |records| {
             let mut shared = cloned.borrow_mut();
             for record in records.iter() {
                 Core::reducer(&mut shared ,record.result.clone());
             }
             (listener)(records,&shared);
-        }));
+        }),
+            Box::new(move |err| cloned_on_err.borrow_mut()(err)) 
+        );
         Self {
             state:shared_state,
-            repository: Box::new(repository)
+            repository: Box::new(repository),
+            on_error
         }
     }
     pub fn dispatch(&mut self,command: Core::Command){
@@ -66,7 +74,9 @@ impl <Core: ExprocessCore + 'static> Runner<Core> where Core::Result : Clone, Co
                 command,
             }
         };
-        self.repository.push(record);
+        if let Err(err) = self.repository.push(record) {
+            self.on_error.borrow_mut()(err)
+        }
     }
     pub fn unsync(&mut self){
         self.repository.unsync();
