@@ -95,10 +95,7 @@ impl Component for App {
                             State::Ok => {
                                 let link = self.link.clone();
                                 let render = AppRouter::render(move |switch: PublicUrlSwitch| {
-                                    // let on_error = link.callback(|_| Msg::Error);
-                                    let on_error = Callback::from(|_| {
-                                        panic!()
-                                    });
+                                    let on_error = link.callback(|_| Msg::Error);
                                     match switch.route() {
                                         AppRoute::Home => {
                                             html! { <Home on_error=on_error/> }
