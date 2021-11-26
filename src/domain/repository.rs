@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::repository::{push_record, RecordPushIO, sync_record_update};
 use serde_json::{self,Error as SerdeErr};
 use serde::{Deserialize};
@@ -37,7 +39,7 @@ pub struct RecordDesirailizeIO {
 }
 
 impl Repository<AppCore,RepositoryError> for AppRepository {
-  
+
     fn push(&mut self,record: Record<AppCore>) -> Result<(),RepositoryError>{
         push_record(
             self.room_id.as_str(),
@@ -45,13 +47,20 @@ impl Repository<AppCore,RepositoryError> for AppRepository {
                 id: record.id.as_str(),
                 result: serde_json::to_string(&record.result)?.as_str(),
                 command: serde_json::to_string(&record.command)?.as_str()
-            }
+            },
+            Box::new(|| {
+                todo!()
+            })
         );
         Ok(())
     }
 
-    fn sync(&mut self,mut listener: Box<dyn FnMut(Vec<RecordSync<AppCore>>)>,mut on_error: Box<dyn FnMut(RepositoryError)>) {
-        self.unsync_fn = Some(sync_record_update(self.room_id.as_str(), move |json| {
+    fn sync(&mut self,mut listener: Box<dyn FnMut(Vec<RecordSync<AppCore>>)>,on_error: Box<dyn FnMut(RepositoryError)>) {
+        let on_error = Rc::new(RefCell::new(on_error));
+        let on_error_callback = on_error.clone();
+        self.unsync_fn = Some(sync_record_update(
+            self.room_id.as_str(), 
+            move |json| {
             let result : Result<Vec<RecordDesirailizeIO>,_> = serde_json::from_str(&json);
             match result {
                 Ok(records) => {
@@ -61,9 +70,11 @@ impl Repository<AppCore,RepositoryError> for AppRepository {
                         .collect()
                     );
                 },
-                Err(err) => on_error(err.into()),
+                Err(err) => on_error_callback.borrow_mut()(err.into()),
             }
-        }));
+        },
+        move || on_error.borrow_mut()(RepositoryError::UnExpected("UnExpected".into()))
+    ));
     }
 
     fn unsync(&mut self) {

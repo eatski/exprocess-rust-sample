@@ -14,36 +14,42 @@ export const registerMember = async (roomId:string,name:string):Promise<string> 
     return member.id;
 }
 
-export const syncMember = (roomId:string,listener:(json:string) => void) : () => void => {
+export const syncMember = (roomId:string,listener:(json:string) => void,onError: () => void) : () => void => {
     const db = getStore();
     const rooms = collection(db,"rooms");
     const room = doc(rooms,roomId);
     const members = collection(room,"members");
-    return onSnapshot(members,(snapshot) => {
-        const yourId = getYourId(roomId);
-        const json = JSON.stringify(
-            snapshot.docs.map(doc => ({
+    return onSnapshot(
+        members,
+        (snapshot) => {
+            const yourId = getYourId(roomId);
+            const json = JSON.stringify(
+                snapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id:doc.id,
+                    you:yourId === doc.id
+                }))
+            );
+            listener(json);
+        },
+        onError
+    )
+}
+
+export const fetchMembers = (roomId:string,callback:(json:string) => void, onError:() => void) => {
+    const db = getStore();
+    const rooms = collection(db,"rooms");
+    const room = doc(rooms,roomId);
+    const members = collection(room,"members");
+    getDocs(members)
+        .then(data => {
+            const yourId = getYourId(roomId);
+            const json = JSON.stringify(data.docs.map(doc => ({
                 ...doc.data(),
                 id:doc.id,
                 you:yourId === doc.id
-            }))
-        );
-        listener(json);
-    })
-}
-
-export const fetchMembers = (roomId:string,callback:(json:string) => void) => {
-    const db = getStore();
-    const rooms = collection(db,"rooms");
-    const room = doc(rooms,roomId);
-    const members = collection(room,"members");
-    getDocs(members).then(data => {
-        const yourId = getYourId(roomId);
-        const json = JSON.stringify(data.docs.map(doc => ({
-            ...doc.data(),
-            id:doc.id,
-            you:yourId === doc.id
-        })));
-        callback(json);
-    })
+            })));
+            callback(json);
+        })
+        .catch(onError)
 }
