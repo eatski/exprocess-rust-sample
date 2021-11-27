@@ -1,10 +1,11 @@
 use wasm_bindgen::prelude::*;
-use js_sys::Function;
+use js_sys::{Function};
 
 #[wasm_bindgen()]
 extern "C" {
+    #[wasm_bindgen(catch)]
     #[wasm_bindgen(js_name = "registerMember",js_namespace = ["window","_wasm_js_bridge"])]
-    fn register_member_bridge(room_id: &str,name: &str,on_error: JsValue);
+    pub async fn register_member(room_id: &str,name: &str) -> Result<(),JsValue>;
 
     #[wasm_bindgen(js_name = "syncMember",js_namespace = ["window","_wasm_js_bridge"])]
     pub fn sync_member(room_id: &str,callback: JsValue,on_error: JsValue) -> Function;
@@ -31,9 +32,6 @@ extern "C" {
     pub fn get_your_id(room_id: &str) -> Option<String>;
 }
 
-pub fn register_member(room_id: &str,name: &str,on_error: Box<dyn FnMut()>) {
-    register_member_bridge(room_id,name, Closure::wrap(on_error).into_js_value())
-}
 
 pub fn sync_room(room_id: &str,callback: Box<dyn Fn(Option<String>)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()> {
     let callback = Closure::wrap(callback).into_js_value();

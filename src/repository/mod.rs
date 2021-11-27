@@ -13,8 +13,8 @@ struct MemberJSON<'a> {
     pub you: bool
 }
 
-pub fn register_member(room_id: &str,name: &str,on_error: Box<dyn FnMut()>) {
-    js_bridge::register_member(room_id,name,on_error)
+pub async fn register_member(room_id: &str,name: &str) -> Result<(),()>{
+    js_bridge::register_member(room_id,name).await.map_err(|_| ())
 }
 
 fn json_to_members<'a>(json:&'a String) -> Vec<Member<'a>> {

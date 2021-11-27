@@ -1,3 +1,4 @@
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use crate::components::text_input::Input;
 
@@ -113,11 +114,15 @@ impl Component for Meeting {
                     _ => panic!()
                 }
                 let on_error = self.props.on_error.clone();
-                register_member(
-                    self.props.room_id.as_str(),
-                    name.as_str(),
-                    Box::new(move || on_error.emit(()))
-                );
+                let room_id = self.props.room_id.clone();
+                spawn_local(async move {
+                    if register_member(
+                        room_id.as_str(),
+                        name.as_str(),
+                    ).await.is_err() {
+                        on_error.emit(())
+                    }
+                });
                 true
             },
             

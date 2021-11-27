@@ -14,8 +14,8 @@ export function syncMember(roomid:string,callback: (json:string) => void,onError
     return member.syncMember(roomid,callback,onError);
 }
 
-export function registerMember(roomid:string,name:string,onError: () => void) {
-    member.registerMember(roomid,name).catch(onError);
+export function registerMember(roomid:string,name:string) : Promise<string>{
+    return member.registerMember(roomid,name)
 }
 
 export function fetchMembers(roomid:string,callback: (json:string) => void,onError: () => void) {

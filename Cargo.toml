@@ -28,3 +28,4 @@ names = { version = "0.12.0", default-features = false }
 exprocess = { path = "./libs/exprocess"}
 webutil = { path = "./libs/webutil"}
 mytil = { path = "./libs/mytil"}
+wasm-bindgen-futures = "0.4.25"
