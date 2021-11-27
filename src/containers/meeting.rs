@@ -2,7 +2,7 @@ use yew::prelude::*;
 use crate::components::text_input::Input;
 
 use crate::components::loading::loading;
-use crate::repository::{register_member,sync_members};
+use crate::repository::{JSFunctionCleaner, register_member, sync_members};
 use crate::switch::AppRoute;
 
 // Common
@@ -24,7 +24,7 @@ pub struct Meeting {
     props: Props,
     state: State,
     link: ComponentLink<Self>,
-    on_destroy: Option<Box<dyn FnOnce()>>
+    on_destroy: JSFunctionCleaner
 }
 
 pub struct Member {
@@ -87,7 +87,7 @@ impl Component for Meeting {
             props,
             state: State::Loading,
             link,
-            on_destroy: Some(on_destroy)
+            on_destroy
         }
     }
     
@@ -129,7 +129,7 @@ impl Component for Meeting {
     }
 
     fn destroy(&mut self) {
-        self.on_destroy.take().map(|call| call());
+        self.on_destroy.clean();
     }
 
     fn view(&self) -> Html {
@@ -165,7 +165,7 @@ impl Component for Meeting {
 pub struct MeetingHost {
     props: PropsHost,
     state: StateHost,
-    on_destroy: Option<Box<dyn FnOnce()>>
+    on_destroy: JSFunctionCleaner
 }
 
 #[derive(Clone, Properties)]
@@ -210,7 +210,7 @@ impl Component for MeetingHost {
         Self {
             props,
             state: StateHost::Loading,
-            on_destroy: Some(on_destroy)
+            on_destroy
         }
     }
 
@@ -229,7 +229,7 @@ impl Component for MeetingHost {
     }
 
     fn destroy(&mut self) {
-        self.on_destroy.take().map(|call| call());
+        self.on_destroy.clean();
     }
 
     fn view(&self) -> Html {

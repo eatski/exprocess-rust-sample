@@ -1,3 +1,4 @@
+use mytil::{Cleanable, Cleaner};
 use wasm_bindgen::prelude::*;
 use js_sys::Function;
 
@@ -35,18 +36,32 @@ pub fn register_member<OE: FnOnce() + 'static>(room_id: &str,name: &str,on_error
     register_member_bridge(room_id,name, Closure::once_into_js(Box::new(on_error)))
 }
 
-pub fn sync_room(room_id: &str,callback: Box<dyn FnMut(Option<String>)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()> {
+pub fn sync_room(room_id: &str,callback: Box<dyn FnMut(Option<String>)>,on_error: Box<dyn FnMut()>) -> JSFunctionCleaner {
     let callback = Closure::wrap(callback).into_js_value();
     let on_error = Closure::wrap(on_error).into_js_value();
-    jsfunction_to_function(sync_room_bridge(room_id,callback,on_error))
+    CleanableJSFunction::from(sync_room_bridge(room_id,callback,on_error)).into()
 }
 
-pub fn sync_record_update(room_id: &str, callback: Box<dyn FnMut(String)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()> {
+pub fn sync_record_update(room_id: &str, callback: Box<dyn FnMut(String)>,on_error: Box<dyn FnMut()>) -> JSFunctionCleaner {
     let callback = Closure::wrap(callback).into_js_value();
     let on_error = Closure::wrap(on_error).into_js_value();
-    jsfunction_to_function(sync_record_update_bridge(room_id,callback,on_error))
+    CleanableJSFunction::from(sync_record_update_bridge(room_id,callback,on_error)).into()
 }
 
-pub fn jsfunction_to_function(f: Function) -> Box<dyn FnOnce()>{
-    Box::new(move || {f.call0(&JsValue::NULL).expect("JS function call err");})
+pub struct CleanableJSFunction {
+    js_function: Function
 }
+
+impl From<Function> for CleanableJSFunction {
+    fn from(js_function: Function) -> Self {
+        Self { js_function }
+    }
+}
+
+impl Cleanable for CleanableJSFunction {
+    fn clean(self) {
+        self.js_function.call0(&JsValue::NULL).expect("JS function call err");
+    }
+}
+
+pub type JSFunctionCleaner = Cleaner<CleanableJSFunction>;
