@@ -1,7 +1,8 @@
 pub mod window {
-    use js_sys::Array;
+    use js_sys::{Array, Function};
+    use mytil::{Cleanable, Cleaner};
     use wasm_bindgen::prelude::*;
-    use web_sys::window;
+    use web_sys::{Window, window};
     pub fn set_timeout<CB: FnOnce() + 'static>(callback: CB,time_ms: i32) -> Box<dyn FnOnce()>{
         let callback = Closure::once_into_js( callback);
         let window = window().unwrap();
@@ -11,7 +12,7 @@ pub mod window {
         Box::new(move || window.clear_timeout_with_handle(id))
     }
     
-    pub fn add_eventlistener<CB: FnMut() + 'static>(name: &str,callback: CB) -> Box<dyn FnOnce()>{
+    pub fn add_eventlistener<CB: FnMut() + 'static>(name: &str,callback: CB) -> Cleaner<RemoveListener> {
         let callback : Box<dyn FnMut()> = Box::new(callback);
         let callback = Closure::wrap( callback).into_js_value().into();
         let window = window().unwrap();
@@ -19,12 +20,28 @@ pub mod window {
             .add_event_listener_with_callback(name, &callback)
             .expect("JS Error");
         let name = name.to_string();
-        Box::new(move || window
-            .remove_event_listener_with_callback(name.as_str(), &callback)
-            .expect("JS Error")
-        )
+        RemoveListener {
+            window,
+            func: callback,
+            name
+        }.into()
     }
+    pub struct RemoveListener {
+        window: Window,
+        func: Function,
+        name: String
+    }
+
+    impl Cleanable for RemoveListener {
+        fn clean(self) {
+            self.window
+            .remove_event_listener_with_callback(self.name.as_str(), &self.func)
+            .expect("JS Error")
+        }
+    }
+
 }
+
 
 pub mod util {
     use std::{cell::{RefCell}, rc::Rc};
@@ -79,9 +96,9 @@ pub mod util {
         let on_mousemove = stop_interval(Box::new(move || {
             cloned_timer.borrow_mut().start();
         }), mouse_move_interval);
-        let remove_eventlistener = add_eventlistener("mousemove", on_mousemove);
+        let mut remove_eventlistener = add_eventlistener("mousemove", on_mousemove);
         Box::new(move || {
-            remove_eventlistener();
+            remove_eventlistener.clean();
             timer.borrow_mut().clear();
         })
     }

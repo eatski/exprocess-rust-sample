@@ -140,3 +140,57 @@ pub fn validate_no_duplicate<'a,T : Hash + Eq,Iter: Iterator<Item=T>>(iter: Iter
         }
     }).all(bool::from)
 }
+
+pub trait Cleanable {
+    fn clean(self);
+}
+
+pub struct Cleaner<C: Cleanable> {
+    inner:Option<C>
+}
+
+impl <C: Cleanable>Cleaner<C> {
+    pub fn clean(&mut self) {
+        let cleanable = self.inner.take();
+        cleanable.expect("Obj already cleaned.").clean()
+    }
+}
+
+impl <C: Cleanable> From<C> for Cleaner<C> {
+    fn from(inner: C) -> Self {
+        Self { inner:Some(inner) }
+    }
+}
+
+impl<C: Cleanable> Drop for Cleaner<C> {
+    fn drop(&mut self) {
+        if self.inner.is_some() {
+            panic!("'Cleanable' must clean before droped")
+        }
+    }
+} 
+
+#[test]
+#[should_panic]
+fn test_cleaner_notcleaned() {
+    Cleaner::from(TestCleanable);
+}
+
+#[test]
+fn test_cleaner_cleaned() {
+    Cleaner::from(TestCleanable).clean();
+}
+
+#[test]
+#[should_panic]
+fn test_cleaner_cleaned_twice() {
+    let mut cleaner = Cleaner::from(TestCleanable);
+    cleaner.clean();
+    cleaner.clean();
+}
+
+pub struct TestCleanable;
+
+impl Cleanable for TestCleanable {
+    fn clean(self) {}
+}
