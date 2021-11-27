@@ -40,19 +40,24 @@ pub struct RecordDesirailizeIO {
 
 impl Repository<AppCore,RepositoryError> for AppRepository {
 
-    fn push(&mut self,record: Record<AppCore>) -> Result<(),RepositoryError>{
-        push_record(
-            self.room_id.as_str(),
-            RecordPushIO {
-                id: record.id.as_str(),
-                result: serde_json::to_string(&record.result)?.as_str(),
-                command: serde_json::to_string(&record.command)?.as_str()
+    fn push(&mut self,record: Record<AppCore>,on_error: Box<dyn FnOnce(RepositoryError)>) {
+
+        match (serde_json::to_string(&record.result),serde_json::to_string(&record.command)) {
+            (Ok(result_json), Ok(command_json)) => {
+                let io = RecordPushIO {
+                    id: record.id.as_str(),
+                    result: result_json.as_str(),
+                    command: command_json.as_str()
+                };
+                push_record(
+                    self.room_id.as_str(),
+                    io,
+                    Box::new(|| on_error(RepositoryError::UnExpected("".into())))
+                );
             },
-            Box::new(|| {
-                todo!()
-            })
-        );
-        Ok(())
+            (_, Err(err)) => on_error(err.into()),
+            (Err(err), _) => on_error(err.into()),
+        }
     }
 
     fn sync(&mut self,mut listener: Box<dyn FnMut(Vec<RecordSync<AppCore>>)>,on_error: Box<dyn FnMut(RepositoryError)>) {

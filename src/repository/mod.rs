@@ -115,13 +115,13 @@ pub struct RecordPushIO<'a> {
     pub result: &'a str
 }
 
-pub fn push_record(room_id: &str,record: RecordPushIO,on_error: Box<dyn FnMut()>) {
+pub fn push_record(room_id: &str,record: RecordPushIO,on_error: Box<dyn FnOnce()>) {
     js_bridge::push_record(
         room_id,
         record.id,
         record.command,
         record.result,
-        Closure::wrap (on_error).into_js_value()
+        Closure::once_into_js(on_error)
     )
 }
 

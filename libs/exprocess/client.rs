@@ -15,7 +15,7 @@ pub struct Record<Core: ExprocessCore> {
     pub id: String
 }
 pub trait Repository<Core: ExprocessCore,Err> {
-    fn push(&mut self,record: Record<Core>) -> Result<(),Err>;
+    fn push(&mut self,record: Record<Core>,on_error: Box<dyn FnOnce(Err)>);
     fn sync(&mut self,listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>,on_error: Box<dyn FnMut(Err)>);
     fn unsync(&mut self);
 }
@@ -74,9 +74,9 @@ impl <Core: ExprocessCore + 'static,Err : 'static> Runner<Core,Err> where Core::
                 command,
             }
         };
-        if let Err(err) = self.repository.push(record) {
-            self.on_error.borrow_mut()(err)
-        }
+        let on_error = self.on_error.clone();
+        self.repository.push(record,Box::new(move |err| on_error.borrow_mut()(err)));
+       
     }
     pub fn unsync(&mut self){
         self.repository.unsync();
