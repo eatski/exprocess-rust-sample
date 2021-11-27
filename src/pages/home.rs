@@ -1,3 +1,4 @@
+use presentation::title::title;
 use yew::prelude::*;
 use yew_router::{agent::RouteRequest, prelude::*};
 use crate::repository::{create_room};
@@ -63,8 +64,7 @@ impl Component for Home {
             State::Init { on_submit } => {
                 html! {
                     <div>
-                        <h2>{ "Roll Role" }</h2>
-                        <p>{"This app determines your role at random by rolling. "}</p>
+                        {title()}
                         <Input on_submit=on_submit value="host" button="Join"/>
                     </div>
                 }
