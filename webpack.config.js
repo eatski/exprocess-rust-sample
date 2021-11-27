@@ -44,6 +44,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: "assets", to: "assets" },
+        { from: "node_modules/bulma/css", to: "bulma" },
       ],
     }),
   ],
