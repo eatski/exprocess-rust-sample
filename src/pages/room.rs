@@ -40,7 +40,7 @@ impl Component for Room {
             Msg::Start => {
                 self.state = State::Loading;
                 let on_error = self.props.on_error.clone();
-                start_room(&self.props.room_id,Box::new(move || on_error.clone().emit(())));
+                start_room(&self.props.room_id,move || on_error.clone().emit(()));
             }
         };
         true
@@ -94,8 +94,8 @@ impl Component for Room {
         let on_error = props.on_error.clone();
         let on_destroy = sync_room(
             room_id, 
-            Box::new(move |room| callback.emit(room)),
-            Box::new(move || on_error.clone().emit(()))
+            move |room| callback.emit(room),
+            move || on_error.clone().emit(())
         );
         Self {
             state: State::Loading,

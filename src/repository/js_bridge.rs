@@ -31,11 +31,11 @@ extern "C" {
     pub fn get_your_id(room_id: &str) -> Option<String>;
 }
 
-pub fn register_member(room_id: &str,name: &str,on_error: Box<dyn FnMut()>) {
-    register_member_bridge(room_id,name, Closure::wrap(on_error).into_js_value())
+pub fn register_member<OE: FnOnce() + 'static>(room_id: &str,name: &str,on_error: OE) {
+    register_member_bridge(room_id,name, Closure::once_into_js(Box::new(on_error)))
 }
 
-pub fn sync_room(room_id: &str,callback: Box<dyn Fn(Option<String>)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()> {
+pub fn sync_room(room_id: &str,callback: Box<dyn FnMut(Option<String>)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()> {
     let callback = Closure::wrap(callback).into_js_value();
     let on_error = Closure::wrap(on_error).into_js_value();
     jsfunction_to_function(sync_room_bridge(room_id,callback,on_error))

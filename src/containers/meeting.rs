@@ -71,7 +71,7 @@ impl Component for Meeting {
         let on_error = props.on_error.clone();
         let on_destroy = sync_members(
             props.room_id.as_str(), 
-            Box::new(
+            
                 move |members| {
                     let members = 
                         members
@@ -80,8 +80,8 @@ impl Component for Meeting {
                         .collect::<Vec<Member>>();
                     update.emit(members)
                 }
-            ),
-            Box::new(move || on_error.clone().emit(()))
+            ,
+            move || on_error.clone().emit(())
         );
         Self {
             props,
@@ -116,7 +116,7 @@ impl Component for Meeting {
                 register_member(
                     self.props.room_id.as_str(),
                     name.as_str(),
-                    Box::new(move || on_error.emit(()))
+                    move || on_error.emit(())
                 );
                 true
             },
@@ -196,7 +196,6 @@ impl Component for MeetingHost {
         let on_error = props.on_error.clone();
         let on_destroy = sync_members(
             props.room_id.as_str(), 
-            Box::new(
                 move |members| {
                     let members = 
                         members
@@ -205,8 +204,8 @@ impl Component for MeetingHost {
                         .collect();
                     update.emit(members)
                 }
-            ),
-            Box::new(move || on_error.clone().emit(()))
+            ,
+            move || on_error.clone().emit(())
         );
         Self {
             props,
