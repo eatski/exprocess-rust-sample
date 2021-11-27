@@ -177,24 +177,38 @@ impl<C: Cleanable> Drop for Cleaner<C> {
 #[test]
 #[should_panic]
 fn test_cleaner_notcleaned() {
-    Cleaner::from(TestCleanable);
+    Cleaner::from(TestCleanable::default());
 }
 
 #[test]
 fn test_cleaner_cleaned() {
-    Cleaner::from(TestCleanable).clean();
+    let counter = Counter::new();
+    Cleaner::from(TestCleanable::from(counter.clone())).clean();
+    assert_eq!(counter,1)
 }
 
 #[test]
 #[should_panic]
 fn test_cleaner_cleaned_twice() {
-    let mut cleaner = Cleaner::from(TestCleanable);
+    let mut cleaner = Cleaner::from(TestCleanable::default());
     cleaner.clean();
     cleaner.clean();
 }
+#[derive(Default)]
+pub struct TestCleanable {
+    counter: Counter
+}
 
-pub struct TestCleanable;
+impl From<Counter> for TestCleanable {
+    fn from(counter: Counter) -> Self {
+        {
+            Self {counter}
+        }
+    }
+}
 
 impl Cleanable for TestCleanable {
-    fn clean(self) {}
+    fn clean(self) {
+        self.counter.count()
+    }
 }
