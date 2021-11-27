@@ -16,12 +16,12 @@ type SharedUsedId = Shared<HashSet<String>>;
 
 impl <Core: ExprocessCore + 'static,Err,Inner: Repository<Core,Err>> Repository<Core,Err> for DirectlyDispatch<Core,Err,Inner> {
 
-    fn push(&mut self,record: Record<Core>) -> Result<(), Err> {
+    fn push(&mut self,record: Record<Core>,on_error: Box<dyn FnOnce(Err)>) {
         let records = 
             vec![RecordSync {id: record.id.as_str(),command: &record.command, result: &record.result}];
         (self.listener.borrow_mut())(records);
         self.used_id.borrow_mut().insert(record.id.clone());
-        self.inner.push(record)
+        self.inner.push(record,on_error);
     }
 
     fn sync(&mut self,listener: Box<dyn FnMut(Vec<RecordSync<Core>>)>,on_error: Box<dyn FnMut(Err)>) {
