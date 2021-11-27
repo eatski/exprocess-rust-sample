@@ -29,6 +29,7 @@ pub enum State {
 pub struct App {
     state: State,
     link: ComponentLink<Self>,
+    cleanable: Option<Box<dyn FnOnce()>>
 }
 impl Component for App {
     type Message = Msg;
@@ -38,6 +39,7 @@ impl Component for App {
         Self {
             state: State::Ok,
             link,
+            cleanable: None
         }
     }
 
@@ -70,6 +72,10 @@ impl Component for App {
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
         false
+    }
+
+    fn destroy(&mut self) {
+        self.cleanable.take().map(|c| c());
     }
 
     fn view(&self) -> Html {
@@ -122,7 +128,7 @@ impl Component for App {
 impl App {
     fn set_timer(&mut self) {
         let sleep = self.link.callback(|_| Msg::Sleep);
-        drop(set_timeout_no_mousemove(
+        self.cleanable = Some(set_timeout_no_mousemove(
             move || {
                 sleep.emit(());
             },

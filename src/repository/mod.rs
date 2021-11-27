@@ -13,11 +13,11 @@ struct MemberJSON<'a> {
     pub you: bool
 }
 
-pub fn register_member(room_id: &str,name: &str,on_error: Box<dyn FnMut()>) {
+pub fn register_member<OE: FnOnce() + 'static>(room_id: &str,name: &str,on_error: OE) {
     js_bridge::register_member(room_id,name,on_error)
 }
 
-fn json_to_members<'a>(json:&'a String) -> Vec<Member<'a>> {
+fn json_to_members<'a>(json:&'a str) -> Vec<Member<'a>> {
     let members_json : Vec<MemberJSON> = serde_json::from_str(json).expect("JSON Parse Error");
     members_json
             .iter()
@@ -25,10 +25,11 @@ fn json_to_members<'a>(json:&'a String) -> Vec<Member<'a>> {
             .collect::<Vec<Member>>()
 }
 
-pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()>{
-    let json_callback : Box<dyn Fn(String)>= Box::new(
+pub fn sync_members<CB: FnMut(Vec<Member>) + 'static,OE: FnMut() + 'static>(room_id: &str,mut callback:CB,on_error: OE) -> Box<dyn FnOnce()>{
+    let json_callback : Box<dyn FnMut(String)>= Box::new(
         move |json:String| callback(json_to_members(&json))
     );
+    let on_error : Box<dyn FnMut()> = Box::new(on_error);
     jsfunction_to_function(js_bridge::sync_member(
         room_id, 
         Closure::wrap(json_callback).into_js_value(),
@@ -36,15 +37,11 @@ pub fn sync_members(room_id: &str,callback:Box<dyn Fn(Vec<Member>)>,on_error: Bo
     ))
 }
 
-pub fn fetch_members(room_id: &str,callback:Box<dyn FnOnce(Vec<Member>)>,on_error: Box<dyn FnMut()>) {
-    let json_callback : Box<dyn FnOnce(String)>= Box::new(
-        move |json:String| callback(json_to_members(&json))
-    );
+pub fn fetch_members<CB: FnOnce(Vec<Member>) + 'static,OE: FnOnce() + 'static>(room_id: &str,callback:CB,on_error: OE) {
     js_bridge::fetch_members( 
         room_id, 
-        Closure::once(json_callback).into_js_value(),
-        Closure::wrap(on_error).into_js_value(),
-
+        Closure::once_into_js(move |json:String| callback(json_to_members(json.as_str()))),
+        Closure::once_into_js (on_error),
     )
 }
 
@@ -54,14 +51,14 @@ pub struct Member<'a> {
     pub you: bool
 }
 
-pub fn create_room(hostname: &str,callback : Box<dyn FnOnce()>,on_error: Box<dyn FnMut()>) -> String {
+pub fn create_room<CB: FnOnce() + 'static,OE: FnOnce() + 'static>(hostname: &str,callback : CB,on_error: OE) -> String {
     let mut generator = Generator::with_naming(Name::Numbered);
     let room_id = generator.next().unwrap();
     js_bridge::create_room(
         room_id.as_str(),
         hostname,
-        Closure::once (callback).into_js_value(),
-        Closure::wrap (on_error).into_js_value()
+        Closure::once_into_js(callback),
+        Closure::once_into_js(on_error)
     );
     room_id
 }
@@ -83,7 +80,7 @@ pub struct RoomJSON<'a> {
     pub is_host: bool  
 }
 
-pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>)>,on_error: Box<dyn FnMut()>) -> Box<dyn FnOnce()> {
+pub fn sync_room<CB: FnMut(Option<Room>) + 'static, OE: FnMut() + 'static>(room_id: &str,mut callback:CB,on_error: OE) -> Box<dyn FnOnce()> {
     let callback = Box::new(move |room: Option<String>| {
         let room = room.map(|room| -> Room {
             let room: RoomJSON = serde_json::from_str(room.as_str()).expect("JSON Parse Error");
@@ -98,6 +95,7 @@ pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>)>,on_error: Box<
         });
         callback(room);
     });
+    let on_error = Box::new(on_error);
     js_bridge::sync_room(
         room_id, 
         callback,
@@ -105,8 +103,8 @@ pub fn sync_room(room_id: &str,callback:Box<dyn Fn(Option<Room>)>,on_error: Box<
     )
 }
 
-pub fn start_room(room_id: &str,on_error: Box<dyn FnMut()>) {
-    js_bridge::start_room(room_id,Closure::wrap (on_error).into_js_value());
+pub fn start_room<OE: FnOnce() + 'static>(room_id: &str,on_error: OE) {
+    js_bridge::start_room(room_id,Closure::once_into_js(on_error));
 }
 
 pub struct RecordPushIO<'a> {
@@ -115,7 +113,7 @@ pub struct RecordPushIO<'a> {
     pub result: &'a str
 }
 
-pub fn push_record(room_id: &str,record: RecordPushIO,on_error: Box<dyn FnOnce()>) {
+pub fn push_record<OE: FnOnce() + 'static>(room_id: &str,record: RecordPushIO,on_error: OE) {
     js_bridge::push_record(
         room_id,
         record.id,

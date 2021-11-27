@@ -68,10 +68,7 @@ impl Component for Main {
                 link_listener.send_message(Msg::UpdateState(state))
             }),
             Box::new(move |err| match err {
-                RepositoryError::UnExpected(err) => {
-                    log::error!("{}", err);
-                    link_on_error.emit(());
-                }
+                RepositoryError::UnExpected => link_on_error.emit(())
             }),
         );
         Main {
@@ -90,7 +87,7 @@ impl Component for Main {
                     let on_error =  self.props.on_error.clone();
                     fetch_members(
                         self.props.room_id.as_str(),
-                        Box::new(move |members| {
+                        move |members| {
                             let msg = Msg::PushCommand(AppCommand::Init(
                                 members
                                     .iter()
@@ -101,8 +98,8 @@ impl Component for Main {
                                     .collect(),
                             ));
                             link.send_message(msg);
-                        }),
-                        Box::new(move || on_error.clone().emit(()))
+                        },
+                        move || on_error.clone().emit(())
                     );
                 }
                 self.state = state

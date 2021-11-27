@@ -557,8 +557,10 @@ dependencies = [
 name = "webutil"
 version = "0.1.0"
 dependencies = [
+ "js-sys",
  "mytil",
  "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

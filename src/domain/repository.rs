@@ -8,12 +8,13 @@ use exprocess::client::{Record, RecordSync, Repository};
 use super::state::{AppCommand, AppCore, AppResult};
 
 pub enum RepositoryError {
-    UnExpected(String)
+    UnExpected
 }
 
 impl From<SerdeErr> for RepositoryError {
     fn from(err: SerdeErr) -> Self {
-        RepositoryError::UnExpected(err.to_string())
+        log::error!("{}",err.to_string());
+        RepositoryError::UnExpected
     }
 }
 
@@ -52,7 +53,7 @@ impl Repository<AppCore,RepositoryError> for AppRepository {
                 push_record(
                     self.room_id.as_str(),
                     io,
-                    Box::new(|| on_error(RepositoryError::UnExpected("".into())))
+                    || on_error(RepositoryError::UnExpected)
                 );
             },
             (_, Err(err)) => on_error(err.into()),
@@ -78,7 +79,7 @@ impl Repository<AppCore,RepositoryError> for AppRepository {
                 Err(err) => on_error_callback.borrow_mut()(err.into()),
             }
         },
-        move || on_error.borrow_mut()(RepositoryError::UnExpected("UnExpected".into()))
+        move || on_error.borrow_mut()(RepositoryError::UnExpected)
     ));
     }
 

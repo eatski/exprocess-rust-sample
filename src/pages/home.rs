@@ -43,8 +43,8 @@ impl Component for Home {
                 let on_error = self.props.on_error.clone();
                 let id = create_room(
                     &name,
-                    Box::new(|| {}),
-                    Box::new(move || on_error.clone().emit(()))
+                    || {},
+                    move || on_error.clone().emit(())
                 );
                 let route = AppRoute::Room(id);
                 let mut dispatcher = RouteAgentDispatcher::new();
