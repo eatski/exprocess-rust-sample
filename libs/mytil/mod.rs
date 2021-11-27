@@ -146,13 +146,16 @@ pub trait Cleanable {
 }
 
 pub struct Cleaner<C: Cleanable> {
-    inner:Option<C>
+    inner:Option<C>,
 }
 
 impl <C: Cleanable>Cleaner<C> {
     pub fn clean(&mut self) {
         let cleanable = self.inner.take();
         cleanable.expect("Obj already cleaned.").clean()
+    }
+    pub fn ignore(mut self) {
+        self.inner = None
     }
 }
 

@@ -3,13 +3,27 @@ pub mod window {
     use mytil::{Cleanable, Cleaner};
     use wasm_bindgen::prelude::*;
     use web_sys::{Window, window};
-    pub fn set_timeout<CB: FnOnce() + 'static>(callback: CB,time_ms: i32) -> Box<dyn FnOnce()>{
+    pub fn set_timeout<CB: FnOnce() + 'static>(callback: CB,time_ms: i32) -> Cleaner<ClearTimeout> {
         let callback = Closure::once_into_js( callback);
         let window = window().unwrap();
         let id = window
             .set_timeout_with_callback_and_timeout_and_arguments(&callback.into(), time_ms, &Array::new())
             .expect("JS Error");
-        Box::new(move || window.clear_timeout_with_handle(id))
+        ClearTimeout {
+            window,
+            id
+        }.into()
+    }
+
+    pub struct ClearTimeout {
+        window: Window,
+        id: i32
+    }
+
+    impl Cleanable for ClearTimeout {
+        fn clean(self) {
+            self.window.clear_timeout_with_handle(self.id)
+        }
     }
     
     pub fn add_eventlistener<CB: FnMut() + 'static>(name: &str,callback: CB) -> Cleaner<RemoveListener> {
@@ -46,7 +60,9 @@ pub mod window {
 pub mod util {
     use std::{cell::{RefCell}, rc::Rc};
 
-    use crate::window::add_eventlistener;
+    use mytil::Cleaner;
+
+    use crate::window::{ClearTimeout, add_eventlistener};
 
     use super::window::set_timeout;
     /**
@@ -59,7 +75,7 @@ pub mod util {
                 callback();
                 stopping.replace(true);
                 let stopping = stopping.clone();
-                let _ = set_timeout(move || { stopping.replace(false); }, interval);
+                set_timeout(move || { stopping.replace(false); }, interval).ignore();
             }
         })
     }
@@ -67,7 +83,7 @@ pub mod util {
     pub struct ResetableTimer<CB: FnMut()> {
         callback: Rc<RefCell<CB>>,
         ms: i32,
-        clear_inner: Option<Box<dyn FnOnce()>>
+        clear_inner: Option<Cleaner<ClearTimeout>>
     }
     
     impl <CB: FnMut() + 'static>ResetableTimer<CB> {
@@ -76,10 +92,10 @@ pub mod util {
             let clear = self.clear_inner.replace(
                 set_timeout(move || callback.borrow_mut()(), self.ms)
             );
-            clear.map(|clear| clear());
+            clear.map(|mut cleaner| cleaner.clean());
         }
         pub fn clear(&mut self) {
-            self.clear_inner.take().map(|clear| clear());
+            self.clear_inner.take().map(|mut cleaner| cleaner.clean());
         }
         pub fn new(callback: CB,ms: i32) -> Self {
             Self {
