@@ -1,8 +1,7 @@
-use presentation::title::title;
+use presentation::{home::home};
 use yew::prelude::*;
 use yew_router::{agent::RouteRequest, prelude::*};
 use crate::repository::{create_room};
-use crate::components::text_input::{Input};
 
 use crate::switch::AppRoute;
 
@@ -61,14 +60,7 @@ impl Component for Home {
 
     fn view(&self) -> Html {
         match &self.state {
-            State::Init { on_submit } => {
-                html! {
-                    <div>
-                        {title()}
-                        <Input on_submit=on_submit value="host" button="Join"/>
-                    </div>
-                }
-            },
+            State::Init { on_submit } => home(on_submit),
         }
         
     }
