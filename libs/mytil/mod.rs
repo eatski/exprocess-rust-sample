@@ -147,21 +147,41 @@ pub trait Cleanable {
 
 pub struct Cleaner<C: Cleanable> {
     inner:Option<C>,
+    cleaned: bool
 }
 
 impl <C: Cleanable>Cleaner<C> {
     pub fn clean(&mut self) {
         let cleanable = self.inner.take();
-        cleanable.expect("Obj already cleaned.").clean()
+        match cleanable {
+            Some(cleanable) => {
+                self.cleaned = true;
+                cleanable.clean();
+            },
+            None => {
+                if self.cleaned {
+                    panic!("Obj already cleaned.")
+                }
+            },
+        }
     }
     pub fn ignore(mut self) {
         self.inner = None
+    }
+    pub fn empty() -> Self {
+        Self {
+            inner: None,
+            cleaned: false
+        }
     }
 }
 
 impl <C: Cleanable> From<C> for Cleaner<C> {
     fn from(inner: C) -> Self {
-        Self { inner:Some(inner) }
+        Self { 
+            inner:Some(inner),
+            cleaned: false
+        }
     }
 }
 
@@ -172,43 +192,56 @@ impl<C: Cleanable> Drop for Cleaner<C> {
             panic!("'Cleanable' must clean before droped")
         }
     }
-} 
-
-#[test]
-#[should_panic]
-fn test_cleaner_notcleaned() {
-    Cleaner::from(TestCleanable::default());
 }
 
-#[test]
-fn test_cleaner_cleaned() {
-    let counter = Counter::new();
-    Cleaner::from(TestCleanable::from(counter.clone())).clean();
-    assert_eq!(counter,1)
-}
+mod test {
+    use crate::{Cleanable, Cleaner, testing::Counter};
 
-#[test]
-#[should_panic]
-fn test_cleaner_cleaned_twice() {
-    let mut cleaner = Cleaner::from(TestCleanable::default());
-    cleaner.clean();
-    cleaner.clean();
-}
-#[derive(Default)]
-pub struct TestCleanable {
-    counter: Counter
-}
+    #[test]
+    #[should_panic]
+    fn test_cleaner_notcleaned() {
+        Cleaner::from(TestCleanable::default());
+    }
+    
+    #[test]
+    fn test_cleaner_cleaned() {
+        let counter = Counter::new();
+        Cleaner::from(TestCleanable::from(counter.clone())).clean();
+        assert_eq!(counter,1)
+    }
+    
+    #[test]
+    #[should_panic]
+    fn test_cleaner_cleaned_twice() {
+        let mut cleaner = Cleaner::from(TestCleanable::default());
+        cleaner.clean();
+        cleaner.clean();
+    }
 
-impl From<Counter> for TestCleanable {
-    fn from(counter: Counter) -> Self {
-        {
-            Self {counter}
+    #[test]
+    fn test_empty() {
+        Cleaner::<TestCleanable>::empty();
+    }
+
+
+    #[derive(Default)]
+    pub struct TestCleanable {
+        counter: Counter
+    }
+    
+    impl From<Counter> for TestCleanable {
+        fn from(counter: Counter) -> Self {
+            {
+                Self {counter}
+            }
         }
     }
+    
+    impl Cleanable for TestCleanable {
+        fn clean(self) {
+            self.counter.count()
+        }
+    }
+
 }
 
-impl Cleanable for TestCleanable {
-    fn clean(self) {
-        self.counter.count()
-    }
-}

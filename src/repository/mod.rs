@@ -1,10 +1,10 @@
 mod js_bridge;
+use mytil::Cleaner;
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::{self};
 use names::{Generator, Name};
-
-use self::js_bridge::jsfunction_to_function;
+pub use js_bridge::{CleanableJSFunction,JSFunctionCleaner};
 
 #[derive(Serialize, Deserialize)]
 struct MemberJSON<'a> {
@@ -12,6 +12,8 @@ struct MemberJSON<'a> {
     pub id: &'a str,
     pub you: bool
 }
+
+
 
 pub fn register_member<OE: FnOnce() + 'static>(room_id: &str,name: &str,on_error: OE) {
     js_bridge::register_member(room_id,name,on_error)
@@ -25,16 +27,16 @@ fn json_to_members<'a>(json:&'a str) -> Vec<Member<'a>> {
             .collect::<Vec<Member>>()
 }
 
-pub fn sync_members<CB: FnMut(Vec<Member>) + 'static,OE: FnMut() + 'static>(room_id: &str,mut callback:CB,on_error: OE) -> Box<dyn FnOnce()>{
+pub fn sync_members<CB: FnMut(Vec<Member>) + 'static,OE: FnMut() + 'static>(room_id: &str,mut callback:CB,on_error: OE) -> JSFunctionCleaner {
     let json_callback : Box<dyn FnMut(String)>= Box::new(
         move |json:String| callback(json_to_members(&json))
     );
     let on_error : Box<dyn FnMut()> = Box::new(on_error);
-    jsfunction_to_function(js_bridge::sync_member(
+    CleanableJSFunction::from(js_bridge::sync_member(
         room_id, 
         Closure::wrap(json_callback).into_js_value(),
         Closure::wrap(on_error).into_js_value(),
-    ))
+    )).into()
 }
 
 pub fn fetch_members<CB: FnOnce(Vec<Member>) + 'static,OE: FnOnce() + 'static>(room_id: &str,callback:CB,on_error: OE) {
@@ -80,7 +82,7 @@ pub struct RoomJSON<'a> {
     pub is_host: bool  
 }
 
-pub fn sync_room<CB: FnMut(Option<Room>) + 'static, OE: FnMut() + 'static>(room_id: &str,mut callback:CB,on_error: OE) -> Box<dyn FnOnce()> {
+pub fn sync_room<CB: FnMut(Option<Room>) + 'static, OE: FnMut() + 'static>(room_id: &str,mut callback:CB,on_error: OE) -> Cleaner<CleanableJSFunction> {
     let callback = Box::new(move |room: Option<String>| {
         let room = room.map(|room| -> Room {
             let room: RoomJSON = serde_json::from_str(room.as_str()).expect("JSON Parse Error");
@@ -123,7 +125,7 @@ pub fn push_record<OE: FnOnce() + 'static>(room_id: &str,record: RecordPushIO,on
     )
 }
 
-pub fn sync_record_update<F: FnMut(String) + 'static,E: FnMut() + 'static>(room_id: &str,listener: F,on_error: E) -> Box<dyn FnOnce()> {
+pub fn sync_record_update<F: FnMut(String) + 'static,E: FnMut() + 'static>(room_id: &str,listener: F,on_error: E) -> Cleaner<CleanableJSFunction> {
     js_bridge::sync_record_update(room_id, Box::new(listener),Box::new(on_error))
 }
 

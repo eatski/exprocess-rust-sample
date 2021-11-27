@@ -1,6 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::repository::{push_record, RecordPushIO, sync_record_update};
+use crate::repository::{JSFunctionCleaner, RecordPushIO, push_record, sync_record_update};
+use mytil::Cleaner;
 use serde_json::{self,Error as SerdeErr};
 use serde::{Deserialize};
 
@@ -20,14 +21,14 @@ impl From<SerdeErr> for RepositoryError {
 
 pub struct AppRepository {
     room_id: String,
-    unsync_fn: Option<Box<dyn FnOnce()>>
+    unsync_fn: JSFunctionCleaner
 }
 
 impl AppRepository {
     pub fn new(room_id: String) -> Self {
         Self {
             room_id,
-            unsync_fn: None
+            unsync_fn: Cleaner::empty()
         }
     }
 }
@@ -64,7 +65,7 @@ impl Repository<AppCore,RepositoryError> for AppRepository {
     fn sync(&mut self,mut listener: Box<dyn FnMut(Vec<RecordSync<AppCore>>)>,on_error: Box<dyn FnMut(RepositoryError)>) {
         let on_error = Rc::new(RefCell::new(on_error));
         let on_error_callback = on_error.clone();
-        self.unsync_fn = Some(sync_record_update(
+        self.unsync_fn = sync_record_update(
             self.room_id.as_str(), 
             move |json| {
             let result : Result<Vec<RecordDesirailizeIO>,_> = serde_json::from_str(&json);
@@ -80,11 +81,11 @@ impl Repository<AppCore,RepositoryError> for AppRepository {
             }
         },
         move || on_error.borrow_mut()(RepositoryError::UnExpected)
-    ));
+    );
     }
 
     fn unsync(&mut self) {
-        self.unsync_fn.take().map(|call| call());
+        self.unsync_fn.clean();
     }
 }
 

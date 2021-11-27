@@ -1,13 +1,15 @@
+
 use yew::prelude::*;
 use crate::components::{loading::loading,not_found::not_found};
 use crate::containers::main::Main;
 use crate::repository::{sync_room,Room as RoomData,Phase,start_room,get_your_id};
 use crate::containers::meeting::{Meeting,MeetingHost};
+use crate::repository::JSFunctionCleaner;
 pub struct Room {
     state: State,
     props: Props,
     link: ComponentLink<Self>,
-    on_destroy: Option<Box<dyn FnOnce()>>
+    on_destroy: JSFunctionCleaner
 }
 
 type YourId = Option<String>;
@@ -51,7 +53,7 @@ impl Component for Room {
     }
 
     fn destroy(&mut self) {
-        self.on_destroy.take().map(|call| call());
+        self.on_destroy.clean();
     }
 
     fn view(&self) -> Html {
@@ -101,7 +103,7 @@ impl Component for Room {
             state: State::Loading,
             props,
             link,
-            on_destroy:Some(on_destroy)
+            on_destroy
         }
     }
 }
