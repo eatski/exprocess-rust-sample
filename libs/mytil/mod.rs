@@ -167,7 +167,8 @@ impl <C: Cleanable> From<C> for Cleaner<C> {
 
 impl<C: Cleanable> Drop for Cleaner<C> {
     fn drop(&mut self) {
-        if self.inner.is_some() {
+        if let Some(inner) = self.inner.take() {
+            inner.clean();
             panic!("'Cleanable' must clean before droped")
         }
     }
