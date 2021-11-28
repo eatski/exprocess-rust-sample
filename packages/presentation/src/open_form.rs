@@ -34,7 +34,6 @@ impl Component for OpenForm {
             Msg::Change(value) => self.value = value,
             Msg::Submit => {
                 self.props.on_submit.emit(self.value.clone());
-                self.value = String::from("");
             }
         }
         true

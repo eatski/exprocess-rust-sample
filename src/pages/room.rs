@@ -57,7 +57,7 @@ impl Component for Room {
     }
 
     fn view(&self) -> Html {
-        let content = match &self.state {
+        match &self.state {
             State::Loading => loading(),
             State::Fetched(room,your_id) => match room.phase {
                 Phase::Meeting =>  if !room.is_host {
@@ -81,11 +81,6 @@ impl Component for Room {
                 
             }
             State::NotExists => not_found(),
-        };
-        html! {
-            <section>
-                {content}
-            </section>
         }
     }
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
