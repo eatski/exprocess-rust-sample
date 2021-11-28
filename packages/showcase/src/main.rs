@@ -38,7 +38,7 @@ pub fn main() {
     panic!()
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(start)]
 pub fn start() {
     yew::start_app::<Showcase>();
 }

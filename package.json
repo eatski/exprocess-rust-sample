@@ -8,7 +8,7 @@
     "dev": "wasm-pack build && BUILD_MODE=dev webpack",
     "emu": "firebase emulators:start",
     "build": "wasm-pack build --release && webpack",
-    "showcase": "wasm-pack build packages/showcase && BUILD_MODE=showcase webpack"
+    "showcase": "wasm-pack build --dev packages/showcase && BUILD_MODE=showcase webpack"
   },
   "repository": {
     "type": "git",
