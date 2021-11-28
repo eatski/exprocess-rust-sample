@@ -11,7 +11,8 @@ path = "src/main.rs"
 members = [
     "libs/exprocess",
     "libs/webutil",
-    "packages/presentation"
+    "packages/presentation",
+    "packages/showcase"
 ]
 
 [dependencies]

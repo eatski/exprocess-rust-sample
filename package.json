@@ -7,7 +7,8 @@
     "test": "cargo test --workspace",
     "dev": "wasm-pack build && BUILD_MODE=dev webpack",
     "emu": "firebase emulators:start",
-    "build": "wasm-pack build --release && webpack"
+    "build": "wasm-pack build --release && webpack",
+    "showcase": "wasm-pack build packages/showcase && BUILD_MODE=showcase webpack"
   },
   "repository": {
     "type": "git",

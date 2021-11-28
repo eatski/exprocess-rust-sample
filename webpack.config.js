@@ -9,7 +9,7 @@ const BUILD_MODE = "BUILD_MODE";
 module.exports = {
   mode: process.env[BUILD_MODE] === "dev" ? "development" : "production",
   entry: {
-    app: path.resolve(__dirname, "index.ts"),
+    app: process.env[BUILD_MODE] === "showcase" ? path.resolve(__dirname, "showcase.ts") : path.resolve(__dirname, "index.ts"),
   },
   output: {
     path: path.resolve(__dirname, "dist"),
