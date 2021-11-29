@@ -15,6 +15,9 @@ members = [
     "packages/showcase"
 ]
 
+[profile.release]
+opt-level = 's'
+
 [dependencies]
 log = "0.4"
 rand = { version = "0.8" }
