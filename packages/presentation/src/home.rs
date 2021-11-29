@@ -1,11 +1,19 @@
 use yew::prelude::*;
 
-use crate::title::title;
+use crate::main_vis::main_vis_container;
+use crate::title::{title, title_description};
 use crate::open_form::OpenForm;
 pub fn home(on_submit: &Callback<String>) -> Html {
     html! {
         <>
-            {title()}
+            {main_vis_container(
+                html! {
+                    <>
+                        {title()}
+                        {title_description()}
+                    </>
+                }
+            )}
             <div class="section">
                 <OpenForm on_submit=on_submit />
             </div>

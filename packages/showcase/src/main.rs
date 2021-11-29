@@ -1,4 +1,4 @@
-use presentation::title::title;
+use presentation::home::home;
 use yew::{ prelude::*};
 use yew_router::{ prelude::*};
 use wasm_bindgen::prelude::*;
@@ -30,7 +30,7 @@ impl Component for Showcase {
     }
 
     fn view(&self) -> Html {
-        title()
+        home(&Callback::noop())
     }
 }
 
