@@ -1,8 +1,9 @@
+use presentation::loading::loading;
 use presentation::meeting::{GuestForm, meeting_guest, meeting_host};
 use presentation::members::Member;
+
 use yew::prelude::*;
 
-use crate::components::loading::loading;
 use crate::repository::{JSFunctionCleaner, register_member, sync_members};
 
 // for Guest

@@ -3,7 +3,6 @@ use wasm_bindgen::prelude::*;
 use webutil::util::set_timeout_no_mousemove;
 use yew::prelude::*;
 
-mod components;
 mod containers;
 mod domain;
 mod pages;
@@ -13,7 +12,7 @@ use pages::{home::Home, room::Room};
 mod switch;
 use switch::{AppRoute, AppRouter, PublicUrlSwitch};
 
-use crate::components::error;
+use presentation::error;
 
 pub enum Msg {
     Sleep,
