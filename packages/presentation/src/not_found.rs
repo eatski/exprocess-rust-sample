@@ -2,6 +2,8 @@ use yew::{Html, html};
 
 pub fn not_found() -> Html{
     html! {
-        <div>{"Not Found"}</div>
+        <div class="section">
+            <p class="title is-3">{"Not Found"}</p>
+        </div>
     }
 }

@@ -1,4 +1,4 @@
-use presentation::{home::home, meeting::{meeting_host}, members::Member};
+use presentation::{home::home, meeting::{meeting_host}, members::Member, sleep::sleep};
 use yew::{ prelude::*};
 use yew_router::{ prelude::*};
 use wasm_bindgen::prelude::*;
@@ -49,6 +49,9 @@ impl Component for Showcase {
                         ],
                         &Callback::noop()
                     )}
+                </div>
+                <div>
+                    {sleep()}
                 </div>
                 
             </>
