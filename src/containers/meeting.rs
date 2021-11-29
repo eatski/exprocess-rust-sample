@@ -190,7 +190,7 @@ impl Component for MeetingHost {
             StateHost::Loading => loading(),
             StateHost::Fetched { members } => {
                 let start = self.props.start.reform(|_| ());
-                meeting_host(members,start)
+                meeting_host(members,&start)
             },
         }
         
