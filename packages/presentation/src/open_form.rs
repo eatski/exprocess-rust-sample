@@ -56,7 +56,7 @@ impl Component for OpenForm {
                     <input type="text" class="input" placeholder="あなたの名前" value=value minlength=1 onchange=onchange/>
                 </div>
                 <div class="column">
-                    <button class="button is-link" onclick=onclick>{"はじめる"}</button>
+                    <button class="button is-link" onclick=onclick>{"部屋を作成"}</button>
                 </div>
             </div>
         }

@@ -1,4 +1,5 @@
-use presentation::meeting::{GuestForm, Member, meeting_guest, meeting_host};
+use presentation::meeting::{GuestForm, meeting_guest, meeting_host};
+use presentation::members::Member;
 use yew::prelude::*;
 
 use crate::components::loading::loading;
@@ -189,8 +190,7 @@ impl Component for MeetingHost {
         match &self.state {
             StateHost::Loading => loading(),
             StateHost::Fetched { members } => {
-                let start = self.props.start.reform(|_| ());
-                meeting_host(members,&start)
+                meeting_host(members,&self.props.start.reform(|_| ()))
             },
         }
         

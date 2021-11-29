@@ -6,3 +6,6 @@ pub mod meeting;
 mod main_vis;
 mod join_form;
 mod loading;
+pub mod members;
+pub mod before_role;
+mod how_to_use;

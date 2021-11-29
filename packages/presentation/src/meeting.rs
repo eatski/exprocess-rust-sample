@@ -1,6 +1,8 @@
 use yew::prelude::*;
 
+use crate::how_to_use::how_to_use;
 use crate::loading::loading;
+use crate::members::{Member, members_view};
 use crate::{main_vis::main_vis_container, title::title};
 use crate::join_form::JoinForm;
 
@@ -44,7 +46,7 @@ pub fn meeting_host(members:&Vec<Member>,start: &Callback<()>) -> Html {
             <div class="column">
                 <h3 class="title is-4">{"参加者を集めましょう。"}</h3>
                 {members_view(members)}
-                <button onclick=onclick class="button is-link">{"Roll"}</button>
+                <button onclick=onclick class="button is-link">{"はじめる"}</button>
             </div>
             <div class="column">
                 {how_to_use()}
@@ -53,49 +55,6 @@ pub fn meeting_host(members:&Vec<Member>,start: &Callback<()>) -> Html {
     }
 }
 
-pub struct Member {
-    pub you: bool,
-    pub name: String
-}
 
-fn members_view(members:&Vec<Member>)-> Html {
-    let members = members.iter().map(|member| html! {
-        <tr>
-            <td>
-                <span>{member.name.as_str()}</span>
-            </td>
-            <td>
-                {if member.you {html! {<span class="tag is-primary ml-2">{"YOU"}</span>}} else {html! {}}}
-            </td>
-        </tr>
-    });
-    html! {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>{"参加者"}</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {for members}
-            </tbody>
-        </table>
-    }
-}
-
-fn how_to_use() -> Html {
-    html! {
-        <div class="content">
-            <h3>{"使い方"}</h3>
-            <ul>
-                <li>{"このページのURLを他の参加者に共有してください。"}</li>
-                <li>{"参加者が集まるのを待ちます。"}</li>
-                <li>{"集まったら'Roll'を押しましょう。"}</li>
-                <li>{"それぞれの画面に自分の役職が表示されます。"}</li>
-            </ul>
-        </div>
-    }
-}
 
 

@@ -1,4 +1,4 @@
-use presentation::{home::home, meeting::{Member, meeting_host}};
+use presentation::{home::home, meeting::{meeting_host}, members::Member};
 use yew::{ prelude::*};
 use yew_router::{ prelude::*};
 use wasm_bindgen::prelude::*;

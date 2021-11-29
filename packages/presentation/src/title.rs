@@ -1,6 +1,5 @@
 use yew::{html, Html};
 
-
 pub fn title() -> Html {
    html! {
         <>
