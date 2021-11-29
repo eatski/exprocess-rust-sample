@@ -1,23 +1,9 @@
+use presentation::meeting::{GuestForm, meeting_guest, meeting_host};
+use presentation::members::Member;
 use yew::prelude::*;
-use crate::components::text_input::Input;
 
 use crate::components::loading::loading;
 use crate::repository::{JSFunctionCleaner, register_member, sync_members};
-use crate::switch::AppRoute;
-
-// Common
-
-fn members_view(members:&Vec<Member>)-> Html {
-    let members = members.iter().map(|member| html! {
-        <li>
-            <span>{&member.name}</span>
-            {if member.you {html! {<span>{"⇨YOU"}</span>}} else {html! {}}}
-        </li>
-    });
-    html! {
-        <ul>{for members}</ul>
-    }
-}
 
 // for Guest
 pub struct Meeting {
@@ -26,13 +12,6 @@ pub struct Meeting {
     link: ComponentLink<Self>,
     on_destroy: JSFunctionCleaner
 }
-
-pub struct Member {
-    pub name: String,
-    pub id: String,
-    pub you: bool,
-}
-
 enum State {
     Loading,
     Fetched(Fetched)
@@ -40,14 +19,7 @@ enum State {
 
 struct Fetched {
     members:Vec<Member>,
-    form:FormState
-}
-enum FormState {
-    Joinable {
-        join: Callback<String> 
-    },
-    Joined,
-    Loading
+    form:GuestForm
 }
 
 #[derive(Clone, Debug, Properties)]
@@ -76,7 +48,7 @@ impl Component for Meeting {
                     let members = 
                         members
                         .iter()
-                        .map(|member| Member {id:String::from(member.id),name: String::from(member.name), you: member.you})
+                        .map(|member| Member {name: String::from(member.name), you: member.you})
                         .collect::<Vec<Member>>();
                     update.emit(members)
                 }
@@ -96,9 +68,9 @@ impl Component for Meeting {
             Msg::UpdateMember(members) => {
                 let form = 
                     if members.iter().any(|m| m.you) { 
-                        FormState::Joined
+                        GuestForm::Joined
                     } else { 
-                        FormState::Joinable {
+                        GuestForm::Joinable {
                             join: self.link.callback(|name| Msg::Join {name})
                         }
                     };
@@ -108,7 +80,7 @@ impl Component for Meeting {
             Msg::Join { name } => {
                 match &mut self.state {
                     State::Fetched(fetched)  => {
-                        fetched.form = FormState::Loading;
+                        fetched.form = GuestForm::Loading;
                     },
                     _ => panic!()
                 }
@@ -136,25 +108,7 @@ impl Component for Meeting {
         match &self.state {
             State::Loading => loading(),
             State::Fetched (fetched) => {
-                let title = match &fetched.form {
-                    FormState::Joinable { join: _ } => "JOIN US!",
-                    FormState::Joined => "Waiting host...",
-                    FormState::Loading => "...",
-                };
-                let form_html = match &fetched.form {
-                    FormState::Joinable {join} => html! { 
-                        <Input on_submit=join button="Join"/>
-                    },
-                    FormState::Joined => html! {},
-                    FormState::Loading => loading(),
-                };
-                html! { 
-                    <>
-                        <h2> {title} </h2>
-                        {members_view(&fetched.members)}
-                        {form_html}
-                    </>
-                }
+                meeting_guest(&fetched.form,&fetched.members)
             },
         }
     }
@@ -200,7 +154,7 @@ impl Component for MeetingHost {
                     let members = 
                         members
                         .iter()
-                        .map(|member| Member {id:String::from(member.id),name: String::from(member.name), you: member.you})
+                        .map(|member| Member {name: String::from(member.name), you: member.you})
                         .collect();
                     update.emit(members)
                 }
@@ -236,16 +190,7 @@ impl Component for MeetingHost {
         match &self.state {
             StateHost::Loading => loading(),
             StateHost::Fetched { members } => {
-                let route = AppRoute::Room(self.props.room_id.clone()).into_route().route;
-                let onclick = self.props.start.reform(|_| ());
-                html! { 
-                    <>
-                        <h2> {"Start when you have all the members!"} </h2>
-                        <a href=route>{"Copy this and share URL!"}</a>
-                        {members_view(members)}
-                        <button onclick=onclick>{"Start!"}</button>
-                    </>
-                }
+                meeting_host(members,&self.props.start.reform(|_| ()))
             },
         }
         

@@ -1,36 +1,31 @@
 use yew::prelude::*;
-pub struct Input {
+pub struct JoinForm {
     value: String,
     link: ComponentLink<Self>,
-    props: Props
+    props: Props,
 }
 
-type OnSubmit =  Callback<String>;
+type OnSubmit = Callback<String>;
 
 #[derive(Clone, PartialEq, Properties)]
 pub struct Props {
-    #[prop_or_default]
-    pub value: String,
     pub on_submit: OnSubmit,
-    pub button: String,
-    pub pattern: Option<String>
 }
 
 pub enum Msg {
     Change(String),
-    Submit
+    Submit,
 }
 
-impl Component for Input {
+impl Component for JoinForm {
     type Message = Msg;
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let initial_value = props.value.clone();
         Self {
-            value: initial_value,
+            value: "".into(),
             props: props,
-            link
+            link,
         }
     }
 
@@ -39,7 +34,6 @@ impl Component for Input {
             Msg::Change(value) => self.value = value,
             Msg::Submit => {
                 self.props.on_submit.emit(self.value.clone());
-                self.value = String::from("");
             }
         }
         true
@@ -50,20 +44,21 @@ impl Component for Input {
     }
 
     fn view(&self) -> Html {
-        let onchange = self.link.callback(|data|
-            match data {
-                ChangeData::Value(value) => Msg::Change(value),
-                _ => panic!("Invalid Type")
-            }
-        );
-        let onclick= self.link.callback_once(|_| Msg::Submit);
+        let onchange = self.link.callback(|data| match data {
+            ChangeData::Value(value) => Msg::Change(value),
+            _ => panic!("Invalid Type"),
+        });
+        let onclick = self.link.callback(|_| Msg::Submit);
         let value = self.value.clone();
         html! {
-            <div>
-                <input type="text" value=value minlength=1 pattern=self.props.pattern.clone() onchange=onchange/>
-                <button onclick=onclick>{&self.props.button}</button>
+            <div class="columns">
+                <div class="column is-one-fifth">
+                    <input type="text" class="input" placeholder="あなたの名前" value=value minlength=1 onchange=onchange/>
+                </div>
+                <div class="column">
+                    <button class="button is-link" onclick=onclick>{"参加する"}</button>
+                </div>
             </div>
         }
     }
-
 }

@@ -1,4 +1,4 @@
-use presentation::title::title;
+use presentation::{home::home, meeting::{meeting_host}, members::Member};
 use yew::{ prelude::*};
 use yew_router::{ prelude::*};
 use wasm_bindgen::prelude::*;
@@ -30,7 +30,30 @@ impl Component for Showcase {
     }
 
     fn view(&self) -> Html {
-        title()
+        html! {
+            <>
+                <div>
+                    {home(&Callback::noop())}   
+                </div>
+                <div>
+                    {meeting_host(
+                        &vec![
+                            Member {
+                                name: "aaaa".to_string(),
+                                you: true
+                            },
+                            Member {
+                                name: "iii".to_string(),
+                                you: false
+                            },
+                        ],
+                        &Callback::noop()
+                    )}
+                </div>
+                
+            </>
+        }
+        
     }
 }
 
