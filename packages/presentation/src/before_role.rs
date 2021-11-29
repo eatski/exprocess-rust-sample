@@ -118,26 +118,32 @@ impl Component for HostForm {
             ));
            
         let valid = validate(&self.inputs, self.props.members_num);
+        let on_submit = valid.then(|| {
+            let on_submit = self.props.on_submit.clone();
+            let inputs_capture = self.inputs.clone();
+            Callback::once(move |_| on_submit.emit(inputs_capture))
+        });
         html! {
             <div>
                 <ul class="field">
                     {for inputs}
                 </ul>
-                <div class="field is-flex is-justify-content-center">
-                { 
-                    if valid {
-                        let on_submit = self.props.on_submit.clone();
-                        let inputs_capture = self.inputs.clone();
-                        let onclick = Callback::once(move |_| on_submit.emit(inputs_capture));
+                <div class="field columns">
+                    <div class="column is-offset-8"> 
+                    { 
                         html! {
-                            <button class="button is-link" onclick=onclick>{"Roll"}</button>
+                            <button class="button is-link" disabled=!valid onclick=on_submit>{"Roll"}</button>
                         }
+                    }
+                    </div>
+                </div>
+                {
+                    if valid {
+                        html!{}
                     } else {
-                        html! { <div class="notification is-danger is-light">{"入力が不正です。"}</div>}
+                        html!{<div class="notification is-danger is-light">{"入力が不正です。"}</div>}
                     }
                 }
-                </div>
-                
             </div>
         }
     }
