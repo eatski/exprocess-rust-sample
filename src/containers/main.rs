@@ -1,12 +1,11 @@
 use crate::{
-    components::loading::loading,
     domain::{
         repository::RepositoryError, start, state::AppCommand, state::AppState, state::Member,
         state::PickCommand, state::Role, Runner,
     },
     repository::fetch_members,
 };
-use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, members::Member as MemberViewModel, rolled::rolled};
+use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, loading::loading, members::Member as MemberViewModel, rolled::rolled};
 use yew::prelude::*;
 
 pub struct Main {

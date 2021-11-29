@@ -1,6 +1,7 @@
 
+use presentation::loading::loading;
+use presentation::not_found::not_found;
 use yew::prelude::*;
-use crate::components::{loading::loading,not_found::not_found};
 use crate::containers::main::Main;
 use crate::repository::{sync_room,Room as RoomData,Phase,start_room,get_your_id};
 use crate::containers::meeting::{Meeting,MeetingHost};
