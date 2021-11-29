@@ -1,3 +1,4 @@
+use presentation::layout::layout;
 use wasm_bindgen::prelude::*;
 use webutil::util::set_timeout_no_mousemove;
 use yew::prelude::*;
@@ -79,50 +80,37 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        html! {
-            <>
-                <header>
-                    <a href="/">
-                        <img src="/assets/favicon.ico" />
-                        <strong>{"Roll Role"}</strong>
-                    </a>
-
-                </header>
-                <main>
-                    {
-                        match self.state {
-                            State::Sleep => html! {
-                                <main>
-                                    <h2>{"Are You Sleeping?"}</h2>
-                                    <button onclick={self.link.callback(|_| Msg::ReBoot)}>{"Restart"}</button>
-                                </main>
-                            },
-                            State::Error => error::error(),
-                            State::Ok => {
-                                let link = self.link.clone();
-                                let render = AppRouter::render(move |switch: PublicUrlSwitch| {
-                                    let on_error = link.callback(|_| Msg::Error);
-                                    match switch.route() {
-                                        AppRoute::Home => {
-                                            html! { <Home on_error=on_error/> }
-                                        }
-                                        AppRoute::Room(room_id) => {
-                                            html! { <Room room_id=room_id on_error=on_error/> }
-                                        }
-                                    }
-                                }); 
-                                html! {
-                                    <AppRouter
-                                        render=render
-                                        redirect=AppRouter::redirect(|_| panic!())
-                                    />
-                                }
+        layout(
+            match self.state {
+                State::Sleep => html! {
+                    <div>
+                        <h2>{"Are You Sleeping?"}</h2>
+                        <button onclick={self.link.callback(|_| Msg::ReBoot)}>{"Restart"}</button>
+                    </div>
+                },
+                State::Error => error::error(),
+                State::Ok => {
+                    let link = self.link.clone();
+                    let render = AppRouter::render(move |switch: PublicUrlSwitch| {
+                        let on_error = link.callback(|_| Msg::Error);
+                        match switch.route() {
+                            AppRoute::Home => {
+                                html! { <Home on_error=on_error/> }
+                            }
+                            AppRoute::Room(room_id) => {
+                                html! { <Room room_id=room_id on_error=on_error/> }
                             }
                         }
+                    }); 
+                    html! {
+                        <AppRouter
+                            render=render
+                            redirect=AppRouter::redirect(|_| panic!())
+                        />
                     }
-                </main>
-            </>
-        }
+                }
+            }
+        )
     }
 }
 impl App {

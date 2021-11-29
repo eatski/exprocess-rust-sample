@@ -10,7 +10,9 @@ path = "src/main.rs"
 [workspace]
 members = [
     "libs/exprocess",
-    "libs/webutil"
+    "libs/webutil",
+    "packages/presentation",
+    "packages/showcase"
 ]
 
 [dependencies]
@@ -28,3 +30,4 @@ names = { version = "0.12.0", default-features = false }
 exprocess = { path = "./libs/exprocess"}
 webutil = { path = "./libs/webutil"}
 mytil = { path = "./libs/mytil"}
+presentation = {path = "./packages/presentation"}

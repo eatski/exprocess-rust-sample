@@ -1,0 +1,7 @@
+.my-bottom {
+    position: sticky;
+    bottom: 0;
+}
+.my-main {
+    height: 100vh;
+}

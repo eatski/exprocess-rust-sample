@@ -195,32 +195,32 @@ impl<C: Cleanable> Drop for Cleaner<C> {
 }
 
 mod test {
-    use crate::{Cleanable, Cleaner, testing::Counter};
+    use crate::{Cleanable,testing::Counter};
 
     #[test]
     #[should_panic]
     fn test_cleaner_notcleaned() {
-        Cleaner::from(TestCleanable::default());
+        crate::Cleaner::from(TestCleanable::default());
     }
     
     #[test]
     fn test_cleaner_cleaned() {
         let counter = Counter::new();
-        Cleaner::from(TestCleanable::from(counter.clone())).clean();
+        crate::Cleaner::from(TestCleanable::from(counter.clone())).clean();
         assert_eq!(counter,1)
     }
     
     #[test]
     #[should_panic]
     fn test_cleaner_cleaned_twice() {
-        let mut cleaner = Cleaner::from(TestCleanable::default());
+        let mut cleaner = crate::Cleaner::from(TestCleanable::default());
         cleaner.clean();
         cleaner.clean();
     }
 
     #[test]
     fn test_empty() {
-        Cleaner::<TestCleanable>::empty();
+        crate::Cleaner::<TestCleanable>::empty();
     }
 
 

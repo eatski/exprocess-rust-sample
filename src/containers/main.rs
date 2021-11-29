@@ -1,12 +1,12 @@
 use crate::{
     components::loading::loading,
-    containers::host_form::HostForm,
     domain::{
         repository::RepositoryError, start, state::AppCommand, state::AppState, state::Member,
         state::PickCommand, state::Role, Runner,
     },
     repository::fetch_members,
 };
+use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, members::Member as MemberViewModel, rolled::rolled};
 use yew::prelude::*;
 
 pub struct Main {
@@ -19,17 +19,17 @@ pub struct Main {
 pub enum ViewState {
     Blank,
     Standby {
-        members: Vec<String>,
+        members: Vec<MemberViewModel>,
         host_form: Option<Callback<PickCommand>>,
     },
     Picked(Vec<(Member, Role)>)
 }
 
-fn app_state_to_view_state(app: &AppState, is_host: bool, link: &ComponentLink<Main>) -> ViewState {
+fn app_state_to_view_state(app: &AppState, is_host: bool, your_id: &str,link: &ComponentLink<Main>) -> ViewState {
     match app {
         AppState::Blank => ViewState::Blank,
         AppState::Standby(members) => ViewState::Standby {
-            members: members.iter().map(|m| m.name.clone()).collect(),
+            members: members.iter().map(|m| MemberViewModel {name:m.name.clone(),you: m.id.as_str() == your_id}).collect(),
             host_form: if is_host {
                 Option::Some(link.callback(|command| Msg::PushCommand(AppCommand::Pick(command))))
             } else {
@@ -61,10 +61,16 @@ impl Component for Main {
         let link_listener = link.clone();
         let link_on_error = props.on_error.clone();
         let is_host = props.is_host;
+        let your_id = props.your_id.clone();
         let runner = start(
             props.room_id.clone(),
             Box::new(move |_, state| {
-                let state = app_state_to_view_state(&state, is_host, &link_listener);
+                let state = app_state_to_view_state(
+                    &state, 
+                    is_host, 
+                    your_id.as_str(),
+                    &link_listener
+                );
                 link_listener.send_message(Msg::UpdateState(state))
             }),
             Box::new(move |err| match err {
@@ -117,30 +123,14 @@ impl Component for Main {
         match &self.state {
             ViewState::Blank => loading(),
             ViewState::Standby { members, host_form } => {
-                let host_form_view = match host_form {
-                    Some(on_submit) => html! {
-                        <section>
-                            <h2>{"Roles"}</h2>
-                            <HostForm on_submit=on_submit members_num=members.len()/>
-                        </section>
-                    },
-                    None => html! {},
-                };
-                html! {
-                    <>
-                        <section>
-                            <h2>{"Joined Members"}</h2>
-                            <ul>
-                                {for members.iter().map(|member| {
-                                    html! {
-                                        <li>{member}</li>
-                                    }
-                                })}
-                            </ul>
-
-                        </section>
-                        {host_form_view}
-                    </>
+                match host_form {
+                    Some(on_submit) => before_roll_host(
+                        members,
+                        &on_submit.reform(
+                            |inputs: FormInputs| PickCommand { roles: inputs.into_iter().map(|input| (input.num,Role {name: input.name})).collect() }
+                        )
+                    ),
+                    None => before_roll_guest(members),
                 }
             }
             ViewState::Picked(list) => {
@@ -149,18 +139,7 @@ impl Component for Main {
                     .find(move |(member, _)| member.id == self.props.your_id)
                     .expect("No Player Matches");
 
-                html! {
-                    <section>
-                        <h2>{"Result"}</h2>
-                        // いい感じに書きたい
-                        <p>
-                            {"You("}
-                            {html! {<strong>{&you.name}</strong>}}
-                            {") are "}
-                            {html! {<strong>{&your_role.name}</strong>}}
-                        </p>
-                    </section>
-                }
+                rolled(&you.name,&your_role.name)
             }
         }
     }
