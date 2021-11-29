@@ -37,6 +37,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "index.html"),
       filename: "index.html",
+      inject: false
     }),
     new webpack.EnvironmentPlugin({
       [BUILD_MODE]: null
@@ -44,7 +45,6 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: "assets", to: "assets" },
-        { from: "node_modules/bulma/css", to: "bulma" },
       ],
     }),
   ],
