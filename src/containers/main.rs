@@ -6,7 +6,7 @@ use crate::{
     },
     repository::fetch_members,
 };
-use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, members::Member as MemberViewModel};
+use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, members::Member as MemberViewModel, rolled::rolled};
 use yew::prelude::*;
 
 pub struct Main {
@@ -139,18 +139,7 @@ impl Component for Main {
                     .find(move |(member, _)| member.id == self.props.your_id)
                     .expect("No Player Matches");
 
-                html! {
-                    <section>
-                        <h2>{"Result"}</h2>
-                        // いい感じに書きたい
-                        <p>
-                            {"You("}
-                            {html! {<strong>{&you.name}</strong>}}
-                            {") are "}
-                            {html! {<strong>{&your_role.name}</strong>}}
-                        </p>
-                    </section>
-                }
+                rolled(&you.name,&your_role.name)
             }
         }
     }
