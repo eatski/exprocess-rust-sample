@@ -35,9 +35,9 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "index.html"),
+      template: path.resolve(__dirname, "index.ejs"),
       filename: "index.html",
-      inject: false
+      inject: false,
     }),
     new webpack.EnvironmentPlugin({
       [BUILD_MODE]: null
