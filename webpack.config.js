@@ -37,6 +37,11 @@ module.exports = {
       template: path.resolve(__dirname, "index.ejs"),
       filename: "index.html",
       inject: false,
+      templateParameters(_a,_b,tags) {
+        return {
+          scripts: tags.headTags
+        }
+      }
     }),
     new webpack.EnvironmentPlugin({
       [BUILD_MODE]: null
