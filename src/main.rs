@@ -2,6 +2,7 @@ use presentation::layout::layout;
 use wasm_bindgen::prelude::*;
 use webutil::util::set_timeout_no_mousemove;
 use yew::prelude::*;
+use presentation::sleep::sleep;
 
 mod containers;
 mod domain;
@@ -81,12 +82,7 @@ impl Component for App {
     fn view(&self) -> Html {
         layout(
             match self.state {
-                State::Sleep => html! {
-                    <div>
-                        <h2>{"Are You Sleeping?"}</h2>
-                        <button onclick={self.link.callback(|_| Msg::ReBoot)}>{"Restart"}</button>
-                    </div>
-                },
+                State::Sleep => sleep(),
                 State::Error => error::error(),
                 State::Ok => {
                     let link = self.link.clone();
