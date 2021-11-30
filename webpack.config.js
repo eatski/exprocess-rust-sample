@@ -41,6 +41,11 @@ module.exports = {
     }),
     new webpack.EnvironmentPlugin({
       [BUILD_MODE]: null
-    })
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: "assets", to: "assets" },
+      ],
+    }),
   ],
 };
