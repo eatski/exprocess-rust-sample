@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/itskihaga/yew-poc#readme",
   "dependencies": {
-    "copy-webpack-plugin": "^9.0.1",
     "esbuild": "^0.13.4",
     "esbuild-loader": "^2.16.0",
     "firebase": "^9.1.2",

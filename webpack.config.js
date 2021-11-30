@@ -1,6 +1,5 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 
 const BUILD_MODE = "BUILD_MODE";
@@ -12,7 +11,7 @@ module.exports = {
     app: process.env[BUILD_MODE] === "showcase" ? path.resolve(__dirname, "packages","showcase","pkg","showcase.js") : path.resolve(__dirname, "index.ts"),
   },
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "public"),
     filename: "[name].[contenthash].js",
   },
   module: {
@@ -41,11 +40,6 @@ module.exports = {
     }),
     new webpack.EnvironmentPlugin({
       [BUILD_MODE]: null
-    }),
-    new CopyPlugin({
-      patterns: [
-        { from: "assets", to: "assets" },
-      ],
     }),
   ],
 };
