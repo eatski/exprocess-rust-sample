@@ -414,6 +414,7 @@ dependencies = [
 name = "showcase"
 version = "0.1.0"
 dependencies = [
+ "cafeteria",
  "presentation",
  "wasm-bindgen",
  "yew",
