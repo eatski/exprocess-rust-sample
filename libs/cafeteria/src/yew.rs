@@ -60,18 +60,7 @@ impl <C: GalleryConfig + 'static>Component for Gallery<C> {
                 <section>
                     {render(&self.model, self.link.callback(|v| v))}
                 </section>
-                {
-                    match current {
-                        Some(current) => {
-                            html! {
-                                <section>
-                                    {current}
-                                </section>
-                            }
-                        },
-                        None => html! {},
-                    }
-                }
+                {current.map(|current| { html! { <section>{current}</section> } }).unwrap_or_default()}
             </>
         }
         
