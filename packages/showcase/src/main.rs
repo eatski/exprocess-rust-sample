@@ -7,19 +7,6 @@ use presentation::{
 };
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
-use yew_router::prelude::*;
-
-#[derive(Clone, Debug, Switch)]
-pub enum AppRoute {
-    #[to = "/!"]
-    Home,
-    #[to = "/meeting"]
-    Meeting,
-    #[to = "/sleep"]
-    Sleep
-}
-
-pub type AppRouter = Router<AppRoute>;
 
 pub struct Config;
 
@@ -47,37 +34,11 @@ impl GalleryConfig for Config {
     }
 }
 
-pub struct Showcase;
-
-impl Component for Showcase {
-    type Message = ();
-
-    type Properties = ();
-
-    fn create(_props: Self::Properties, _link: ComponentLink<Self>) -> Self {
-        Self
-    }
-
-    fn update(&mut self, _msg: Self::Message) -> ShouldRender {
-        todo!()
-    }
-
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        todo!()
-    }
-
-    fn view(&self) -> Html {
-        html! {
-            <Gallery<Config>/>
-        }
-    }
-}
-
 pub fn main() {
     panic!()
 }
 
 #[wasm_bindgen(start)]
 pub fn start() {
-    yew::start_app::<Showcase>();
+    yew::start_app::<Gallery<Config>>();
 }
