@@ -14,6 +14,10 @@ pub type Picture = PictureCore<Html>;
 pub type GalleryModel = GalleryCore<Html>;
 
 fn render(gallery: &GalleryModel, callback: Callback<Vec<String>>) -> Html {
+    let callback = callback.reform(|mut v:Vec<String>| {
+        v.reverse();
+        v
+    });
     html! {
         render_dir(&gallery.dir,callback)
     }
@@ -58,14 +62,13 @@ impl <C: GalleryConfig + 'static>Component for Gallery<C> {
         html! {
             <div class="cafeteria-root">
                 <section>
+                    <h2>{self.current.join("/")}</h2>
                     {render(&self.model, self.link.callback(|v| v))}
                 </section>
                 {current.map(|current| { html! { <section>{current}</section> } }).unwrap_or_default()}
             </div>
         }
-        
     }
-
 }
 
 fn render_dir_with_name(name: &str, dir: &Directory, callback: Callback<Vec<String>>) -> Html {

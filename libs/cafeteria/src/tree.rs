@@ -28,19 +28,22 @@ pub struct Gallery<N> {
 
 impl <N>Gallery<N> {
     pub fn get<I: Iterator<Item = String>>(&self,mut iter: I) -> Option<N> {
+        let illegal_access = "Illegal Access";
         let first = iter.next();
-        let found = first
-            .and_then(|first| self.dir.get(&first))
-            .and_then(|tree| iter.fold(Some(tree), |prev,cur|{
+        first
+            .map(|first| self.dir.get(&first).expect(illegal_access))
+            .map(|tree| iter.fold(tree, |prev,cur|{
                 match prev {
-                    Some(PictureTree::Dir(map)) => map.get(&cur),
-                    _ => None,
+                    PictureTree::Dir(map) => map.get(&cur).expect(illegal_access),
+                    _ => panic!("{}",illegal_access),
                 }
-            }));
-        match found {
-            Some(PictureTree::Picture(picture)) => Some(picture.get()),
-            _ => None,
-        }
+            }))
+            .map(|last| {
+                match last {
+                    PictureTree::Picture(picture) => picture.get(),
+                    PictureTree::Dir(_) => panic!("{}",illegal_access),
+                }
+            })
     }
     pub fn new<'a,In:Into<Vec<(&'a str,PictureTree<N>)>>>(val: In) -> Self {
         let vec: Vec<(&'a str,PictureTree<N>)> = val.into();
