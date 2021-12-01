@@ -20,7 +20,15 @@ fs.existsSync(assets_link) || fs.symlinkSync(path.resolve(root, "public", "asset
 const ejs = require('ejs');
 const res = ejs.renderFile(
     path.resolve(root, "index.ejs"),
-    { scripts: `<script>import("/showcase.js").then(init => init.default())</script>` },
+    { scripts: 
+      `
+        <script>import("/showcase.js").then(init => init.default())</script>
+        <style>
+          .cafeteria-root li{
+            margin-left: 1rem;
+          }
+        </style>
+      ` },
     { escape: str => str }
 )
 res.then(content => fs.writeFileSync(path.resolve(__dirname, "pkg", "index.html"), content));

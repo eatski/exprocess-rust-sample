@@ -56,12 +56,12 @@ impl <C: GalleryConfig + 'static>Component for Gallery<C> {
     fn view(&self) -> Html {
         let current = self.model.get(self.current.iter().cloned());
         html! {
-            <>
+            <div class="cafeteria-root">
                 <section>
                     {render(&self.model, self.link.callback(|v| v))}
                 </section>
                 {current.map(|current| { html! { <section>{current}</section> } }).unwrap_or_default()}
-            </>
+            </div>
         }
         
     }
