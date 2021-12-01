@@ -1,8 +1,12 @@
-use yew::{html, Callback, Html};
+use std::{marker::PhantomData};
+
+use yew::{html, Callback, Html, Component, ComponentLink};
 
 use crate::tree::{
     Directory as DirectoryCore, Gallery as GalleryCore, Picture as PictureCore, PictureTree,
 };
+
+pub use crate::tree::{dir,picture};
 
 pub type Directory = DirectoryCore<Html>;
 pub type Pictures = PictureTree<Html>;
@@ -15,21 +19,64 @@ fn render(gallery: &GalleryModel, callback: Callback<Vec<String>>) -> Html {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use yew::{html, Callback};
+pub trait GalleryConfig {
+    fn model() -> GalleryModel;
+}
 
-    use crate::tree::picture;
+pub struct Gallery<C: GalleryConfig + 'static> {
+    __marker: PhantomData<C>,
+    current: Vec<String>,
+    model: GalleryModel,
+    link: ComponentLink<Self>
+}
 
-    use super::{render, GalleryModel};
+impl <C: GalleryConfig + 'static>Component for Gallery<C> {
+    type Message = Vec<String>;
 
-    #[test]
-    fn it_works() {
-        let model = GalleryModel {
-            dir: [("hoge".to_owned(), picture(|| html! {}))].into(),
-        };
-        render(&model, Callback::noop());
+    type Properties = ();
+
+    fn create(_props: Self::Properties, link: yew::ComponentLink<Self>) -> Self {
+        Self {
+            __marker: PhantomData,
+            current: Vec::new(),
+            model: C::model(),
+            link
+        }
     }
+
+    fn update(&mut self, msg: Self::Message) -> yew::ShouldRender {
+        self.current = msg;
+        true
+    }
+
+    fn change(&mut self, _props: Self::Properties) -> yew::ShouldRender {
+        panic!()
+    }
+
+    fn view(&self) -> Html {
+        let current = self.model.get(self.current.iter().cloned());
+        html! {
+            <>
+                <section>
+                    {render(&self.model, self.link.callback(|v| v))}
+                </section>
+                {
+                    match current {
+                        Some(current) => {
+                            html! {
+                                <section>
+                                    {current}
+                                </section>
+                            }
+                        },
+                        None => html! {},
+                    }
+                }
+            </>
+        }
+        
+    }
+
 }
 
 fn render_dir_with_name(name: &str, dir: &Directory, callback: Callback<Vec<String>>) -> Html {
@@ -62,5 +109,22 @@ fn render_dir(dir: &Directory, callback: Callback<Vec<String>>) -> Html {
         <ul>
             {for list}
         </ul>
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use yew::{html, Callback};
+
+    use crate::tree::picture;
+
+    use super::{render, GalleryModel};
+
+    #[test]
+    fn it_works() {
+        let model = GalleryModel {
+            dir: [("hoge".to_owned(), picture(|| html! {}))].into(),
+        };
+        render(&model, Callback::noop());
     }
 }
