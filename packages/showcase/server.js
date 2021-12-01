@@ -27,6 +27,13 @@ const res = ejs.renderFile(
           .cafeteria-root li{
             margin-left: 1rem;
           }
+          .cafeteria-root strong {
+            font-weight: bold;
+          }
+          .cafeteria-root h2 {
+            font-weight: bold;
+            height: 2rem;
+          }
         </style>
       ` },
     { escape: str => str }

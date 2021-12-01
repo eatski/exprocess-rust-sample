@@ -13,29 +13,19 @@ pub type Pictures = PictureTree<Html>;
 pub type Picture = PictureCore<Html>;
 pub type GalleryModel = GalleryCore<Html>;
 
-fn render(gallery: &GalleryModel, callback: Callback<Vec<String>>) -> Html {
-    let callback = callback.reform(|mut v:Vec<String>| {
-        v.reverse();
-        v
-    });
-    html! {
-        render_dir(&gallery.dir,callback)
-    }
-}
-
 pub trait GalleryConfig {
     fn model() -> GalleryModel;
 }
 
 pub struct Gallery<C: GalleryConfig + 'static> {
     __marker: PhantomData<C>,
-    current: Vec<String>,
+    current: PicturePath,
     model: GalleryModel,
     link: ComponentLink<Self>
 }
 
 impl <C: GalleryConfig + 'static>Component for Gallery<C> {
-    type Message = Vec<String>;
+    type Message = PicturePath;
 
     type Properties = ();
 
@@ -63,7 +53,7 @@ impl <C: GalleryConfig + 'static>Component for Gallery<C> {
             <div class="cafeteria-root">
                 <section>
                     <h2>{self.current.join("/")}</h2>
-                    {render(&self.model, self.link.callback(|v| v))}
+                    {self.render_tree(self.link.callback(|v| v))}
                 </section>
                 {current.map(|current| { html! { <section>{current}</section> } }).unwrap_or_default()}
             </div>
@@ -71,52 +61,39 @@ impl <C: GalleryConfig + 'static>Component for Gallery<C> {
     }
 }
 
-fn render_dir_with_name(name: &str, dir: &Directory, callback: Callback<Vec<String>>) -> Html {
-    let name_string = name.to_string();
-    let callback = callback.reform(move |mut vec: Vec<String>| {
-        vec.push(name_string.clone());
-        vec
-    });
-    html! {
-        <>
-            <p>{name}</p>
-            {render_dir(dir,callback)}
-        </>
+impl <C: GalleryConfig + 'static>Gallery<C> {
+    fn render_tree(&self,callback: Callback<PicturePath>) -> Html {
+        self.tree_dir(&self.model.dir,callback,Vec::new())
     }
+    fn tree_dir_with_name(&self,name: &str, dir: &Directory, callback: Callback<PicturePath>,path: PicturePath) -> Html {
+        html! {
+            <>
+                <p>{name}</p>
+                {self.tree_dir(dir,callback,path)}
+            </>
+        }
+    }
+    fn tree_dir(&self,dir: &Directory, callback: Callback<PicturePath>,path: PicturePath) -> Html {
+        let list = dir.iter().map(move |(key, val)| {
+            let mut path = path.clone();
+            path.push(key.clone());
+            let content = match val {
+                PictureTree::Picture(_) => {
+                    let path_cloned = path.clone();
+                    let callback = callback.reform(move |_| path_cloned.clone());
+                    if path.eq(&self.current) { html! {<strong>{key}</strong>} } else { html! {<a onclick=callback>{key}</a>} }
+                }
+                PictureTree::Dir(dir) => self.tree_dir_with_name(key.as_str(), dir, callback.clone(),path.clone()),
+            };
+            html! {<li>{content}</li>}
+        });
+        html! {
+            <ul>
+                {for list}
+            </ul>
+        }
+    }
+    
 }
 
-fn render_dir(dir: &Directory, callback: Callback<Vec<String>>) -> Html {
-    let list = dir.iter().map(|(key, val)| {
-        let content = match val {
-            PictureTree::Picture(_) => {
-                let key_cloned = key.clone();
-                let callback = callback.reform(move |_| vec![key_cloned.clone()]);
-                html! {<a onclick=callback>{key}</a>}
-            }
-            PictureTree::Dir(dir) => render_dir_with_name(key.as_str(), dir, callback.clone()),
-        };
-        html! {<li>{content}</li>}
-    });
-    html! {
-        <ul>
-            {for list}
-        </ul>
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use yew::{html, Callback};
-
-    use crate::tree::picture;
-
-    use super::{render, GalleryModel};
-
-    #[test]
-    fn it_works() {
-        let model = GalleryModel {
-            dir: [("hoge".to_owned(), picture(|| html! {}))].into(),
-        };
-        render(&model, Callback::noop());
-    }
-}
+pub type PicturePath = Vec<String>;
