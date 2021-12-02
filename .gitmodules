@@ -1,3 +1,6 @@
 [submodule "libs/cafeteria"]
 	path = libs/cafeteria
 	url = https://github.com/itskihaga/cafeteria-rust.git
+[submodule "libs/exprocess"]
+	path = libs/exprocess
+	url = https://github.com/itskihaga/exprocess-rust.git
