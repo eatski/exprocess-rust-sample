@@ -418,7 +418,6 @@ dependencies = [
  "presentation",
  "wasm-bindgen",
  "yew",
- "yew-router",
 ]
 
 [[package]]

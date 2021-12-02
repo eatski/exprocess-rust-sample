@@ -9,7 +9,7 @@
     "emu": "firebase emulators:start",
     "build": "wasm-pack build --release && webpack",
     "build:showcase": "wasm-pack build -t web --dev packages/showcase",
-    "serve:showcase": "node packages/showcase/script.js"
+    "serve:showcase": "node packages/showcase/server.js"
   },
   "repository": {
     "type": "git",

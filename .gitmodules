@@ -1,0 +1,3 @@
+[submodule "libs/cafeteria"]
+	path = libs/cafeteria
+	url = https://github.com/itskihaga/cafeteria-rust.git
