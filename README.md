@@ -1,7 +1,23 @@
-# Exprocess for Rust
-Exprocess is a framework for declaratively describing application logic.
+# Exprcess Rust SampleApp
+This is a sample application that uses a library I created called [Exprocess](https://github.com/itskihaga/exprocess-rust).
+Bug reports, etc. can be submitted via Github Issue.
 
-[doc](libs/exprocess/readme.md)
+# Development
+## Install Modules
+```bash
+git submodule update -i
+npm i
+```
 
-# Sample App
+## Build Dev
+```
+npm run dev
+```
+
+## Emulate Firebase
+```
+npm run emu
+```
+
+# Url
 https://pick-role.web.app/

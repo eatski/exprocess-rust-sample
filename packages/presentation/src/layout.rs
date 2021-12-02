@@ -19,7 +19,7 @@ pub fn layout(main: Html) -> Html {
         </main>
         <footer class="footer my-bottom">
             <div class="content has-text-centered">
-                <a href="https://github.com/itskihaga/exprocess-rust/blob/main/about_sample_app.md">{"Githubリポジトリ"}</a>
+                <a href="https://github.com/itskihaga/exprocess-rust-sample">{"Githubリポジトリ"}</a>
             </div>
         </footer>
         </>
