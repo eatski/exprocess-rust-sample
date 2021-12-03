@@ -6,9 +6,9 @@ const BUILD_MODE = "BUILD_MODE";
 
 /** @type import('webpack').Configuration */
 module.exports = {
-  mode: ["dev","showcase"].includes(process.env[BUILD_MODE]) ? "development" : "production",
+  mode: ["dev"].includes(process.env[BUILD_MODE]) ? "development" : "production",
   entry: {
-    app: process.env[BUILD_MODE] === "showcase" ? path.resolve(__dirname, "packages","showcase","pkg","showcase.js") : path.resolve(__dirname, "index.ts"),
+    app: path.resolve(__dirname, "index.ts"),
   },
   output: {
     path: path.resolve(__dirname, "public"),
