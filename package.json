@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "cargo test --workspace",
-    "dev": "wasm-pack build && BUILD_MODE=dev webpack",
+    "dev": "wasm-pack build --dev && BUILD_MODE=dev webpack",
     "emu": "firebase emulators:start",
     "build": "wasm-pack build --release && webpack",
     "build:showcase": "wasm-pack build -t web --dev packages/showcase",

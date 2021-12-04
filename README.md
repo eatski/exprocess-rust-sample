@@ -19,5 +19,8 @@ npm run dev
 npm run emu
 ```
 
+## Open
+localhost:8080
+
 # Url
 https://pick-role.web.app/
