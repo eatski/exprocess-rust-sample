@@ -27,8 +27,7 @@ pub enum State {
 
 pub struct App {
     state: State,
-    link: ComponentLink<Self>,
-    cleanable: Option<Box<dyn FnOnce()>>,
+    link: ComponentLink<Self>
 }
 impl Component for App {
     type Message = Msg;
@@ -38,7 +37,6 @@ impl Component for App {
         Self {
             state: State::Ok,
             link,
-            cleanable: None,
         }
     }
 
@@ -54,10 +52,6 @@ impl Component for App {
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
         false
-    }
-
-    fn destroy(&mut self) {
-        self.cleanable.take().map(|c| c());
     }
 
     fn view(&self) -> Html {
