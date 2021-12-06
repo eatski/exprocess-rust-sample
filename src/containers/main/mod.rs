@@ -24,16 +24,12 @@ pub enum ViewState {
     Picked(Vec<(Member, Role)>)
 }
 
-fn app_state_to_view_state(app: &AppState, is_host: bool, your_id: &str,link: &ComponentLink<Main>) -> ViewState {
+fn app_state_to_view_state(app: &AppState, is_host: bool, your_id: &str,callback: &Callback<Msg>) -> ViewState {
     match app {
         AppState::Blank => ViewState::Blank,
         AppState::Standby(members) => ViewState::Standby {
             members: members.iter().map(|m| MemberViewModel {name:m.name.clone(),you: m.id.as_str() == your_id}).collect(),
-            host_form: if is_host {
-                Option::Some(link.callback(|command| Msg::PushCommand(AppCommand::Pick(command))))
-            } else {
-                Option::None
-            },
+            host_form: is_host.then(|| callback.reform(Msg::PushCommand).reform(AppCommand::Pick)),
         },
         AppState::Picked(picked) => ViewState::Picked(picked.picked.iter().cloned().collect()),
     }
@@ -68,7 +64,7 @@ impl Component for Main {
                     &state, 
                     is_host, 
                     your_id.as_str(),
-                    &link_listener
+                    &link_listener.callback(|e| e)
                 );
                 link_listener.send_message(Msg::UpdateState(state))
             }),
