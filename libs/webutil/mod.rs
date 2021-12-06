@@ -60,7 +60,7 @@ pub mod window {
 pub mod util {
     use std::{cell::{RefCell}, rc::Rc};
 
-    use mytil::Cleaner;
+    use mytil::{Cleaner, FnOnceCleanable};
 
     use crate::window::{ClearTimeout, add_eventlistener};
 
@@ -106,17 +106,17 @@ pub mod util {
         }
     }
 
-    pub fn set_timeout_no_mousemove<F: FnMut() + 'static>(callback: F,ms: i32,mouse_move_interval: i32) -> Box<dyn FnOnce()> {
+    pub fn set_timeout_no_mousemove<F: FnMut() + 'static>(callback: F,ms: i32,mouse_move_interval: i32) -> Cleaner<FnOnceCleanable> {
         let timer = Rc::new(RefCell::new(ResetableTimer::new(callback,ms)));
         let cloned_timer = timer.clone();
         let on_mousemove = stop_interval(Box::new(move || {
             cloned_timer.borrow_mut().start();
         }), mouse_move_interval);
         let mut remove_eventlistener = add_eventlistener("mousemove", on_mousemove);
-        Box::new(move || {
+        FnOnceCleanable::new(move || {
             remove_eventlistener.clean();
             timer.borrow_mut().clear();
-        })
+        }).into()
     }
 }
 
