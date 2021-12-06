@@ -369,11 +369,9 @@ name = "roll-role"
 version = "0.1.0"
 dependencies = [
  "exprocess",
- "js-sys",
  "js_bridge",
  "log",
  "mytil",
- "names",
  "presentation",
  "rand",
  "serde",
