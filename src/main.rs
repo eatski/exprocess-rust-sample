@@ -1,8 +1,7 @@
 use presentation::layout::layout;
 use wasm_bindgen::prelude::*;
-use webutil::util::set_timeout_no_mousemove;
+
 use yew::prelude::*;
-use presentation::sleep::sleep;
 
 mod containers;
 mod domain;
@@ -15,15 +14,13 @@ use pages::{home::Home, room::Room};
 use presentation::error;
 
 use crate::routing::{AppRoute, AppRouter};
+use crate::containers::sleeper::Sleeper;
 
 pub enum Msg {
-    Sleep,
-    ReBoot,
     Error,
 }
 
 pub enum State {
-    Sleep,
     Error,
     Ok,
 }
@@ -31,7 +28,7 @@ pub enum State {
 pub struct App {
     state: State,
     link: ComponentLink<Self>,
-    cleanable: Option<Box<dyn FnOnce()>>
+    cleanable: Option<Box<dyn FnOnce()>>,
 }
 impl Component for App {
     type Message = Msg;
@@ -41,34 +38,17 @@ impl Component for App {
         Self {
             state: State::Ok,
             link,
-            cleanable: None
+            cleanable: None,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match (msg, &self.state) {
-            (Msg::Sleep, State::Ok) => {
-                self.state = State::Sleep;
-                true
-            }
-            (Msg::ReBoot, State::Sleep) => {
-                self.state = State::Ok;
-                self.set_timer();
-                true
-            }
             (_, State::Error) => false,
-            (Msg::Sleep, State::Sleep) => false,
-            (Msg::ReBoot, State::Ok) => false,
             (Msg::Error, _) => {
                 self.state = State::Error;
                 true
             }
-        }
-    }
-
-    fn rendered(&mut self, first_render: bool) {
-        if first_render {
-            self.set_timer();
         }
     }
 
@@ -81,44 +61,35 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        layout(
-            match self.state {
-                State::Sleep => sleep(),
-                State::Error => error::error(),
-                State::Ok => {
-                    let link = self.link.clone();
-                    let render = AppRouter::render(move |switch: AppRoute| {
-                        let on_error = link.callback(|_| Msg::Error);
-                        match switch {
-                            AppRoute::Home => {
-                                html! { <Home on_error=on_error/> }
-                            }
-                            AppRoute::Room(room_id) => {
-                                html! { <Room room_id=room_id on_error=on_error/> }
+        layout(match self.state {
+            State::Error => error::error(),
+            State::Ok => {
+                let link = self.link.clone();
+                let render = AppRouter::render(move |switch: AppRoute| {
+                    let on_error = link.callback(|_| Msg::Error);
+                    match switch {
+                        AppRoute::Home => {
+                            html! { 
+                                <Home on_error=on_error/> 
                             }
                         }
-                    }); 
-                    html! {
-                        <AppRouter
-                            render=render
-                            redirect=AppRouter::redirect(|_| panic!())
-                        />
+                        AppRoute::Room(room_id) => {
+                            html! { 
+                                <Sleeper>
+                                    <Room room_id=room_id on_error=on_error/> 
+                                </Sleeper>
+                            }
+                        }
                     }
+                });
+                html! {
+                    <AppRouter
+                        render=render
+                        redirect=AppRouter::redirect(|_| panic!())
+                    />
                 }
             }
-        )
-    }
-}
-impl App {
-    fn set_timer(&mut self) {
-        let sleep = self.link.callback(|_| Msg::Sleep);
-        self.cleanable = Some(set_timeout_no_mousemove(
-            move || {
-                sleep.emit(());
-            },
-            1000 * 60 * 30,
-            1000,
-        ));
+        })
     }
 }
 

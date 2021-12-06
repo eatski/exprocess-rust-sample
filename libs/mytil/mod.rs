@@ -194,6 +194,24 @@ impl<C: Cleanable> Drop for Cleaner<C> {
     }
 }
 
+pub struct FnOnceCleanable {
+    func: Box<dyn FnOnce()>
+}
+
+impl FnOnceCleanable {
+    pub fn new<F: FnOnce() + 'static>(func: F) -> Self {
+        Self {
+            func: Box::new(func)
+        }
+    }
+}
+
+impl Cleanable for FnOnceCleanable {
+    fn clean(self) {
+        (self.func)()
+    }
+}
+
 mod test {
     use crate::{Cleanable,testing::Counter};
 
