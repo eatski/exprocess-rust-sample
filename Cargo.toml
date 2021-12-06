@@ -13,7 +13,8 @@ members = [
     "libs/webutil",
     "libs/cafeteria",
     "packages/presentation",
-    "packages/showcase"
+    "packages/showcase",
+    "packages/js_bridge"
 ]
 
 [profile.release]
@@ -35,3 +36,4 @@ exprocess = { path = "./libs/exprocess"}
 webutil = { path = "./libs/webutil"}
 mytil = { path = "./libs/mytil"}
 presentation = {path = "./packages/presentation"}
+js_bridge = {path = "./packages/js_bridge"}

@@ -3,9 +3,8 @@ use presentation::loading::loading;
 use presentation::not_found::not_found;
 use yew::prelude::*;
 use crate::containers::main::Main;
-use crate::repository::{sync_room,Room as RoomData,Phase,start_room,get_your_id};
+use js_bridge::{sync_room,Room as RoomData,Phase,start_room,get_your_id,JSFunctionCleaner};
 use crate::containers::meeting::{Meeting,MeetingHost};
-use crate::repository::JSFunctionCleaner;
 pub struct Room {
     state: State,
     props: Props,

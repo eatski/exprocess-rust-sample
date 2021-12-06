@@ -1,7 +1,8 @@
 use presentation::{home::home};
 use yew::prelude::*;
 use yew_router::{agent::RouteRequest, prelude::*};
-use crate::{repository::{create_room}, routing::AppRoute};
+use crate::{routing::AppRoute};
+use js_bridge::{create_room};
 
 pub struct Home {
     state: State,

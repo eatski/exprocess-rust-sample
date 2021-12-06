@@ -4,7 +4,7 @@ use presentation::members::Member;
 
 use yew::prelude::*;
 
-use crate::repository::{JSFunctionCleaner, register_member, sync_members};
+use js_bridge::{JSFunctionCleaner, register_member, sync_members};
 
 // for Guest
 pub struct Meeting {

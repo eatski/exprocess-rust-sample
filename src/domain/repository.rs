@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::repository::{JSFunctionCleaner, RecordPushIO, push_record, sync_record_update};
+use js_bridge::{JSFunctionCleaner, RecordPushIO, push_record, sync_record_update};
 use mytil::Cleaner;
 use serde_json::{self,Error as SerdeErr};
 use serde::{Deserialize};

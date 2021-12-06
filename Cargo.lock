@@ -217,6 +217,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "js_bridge"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "mytil",
+ "names",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -358,6 +370,7 @@ version = "0.1.0"
 dependencies = [
  "exprocess",
  "js-sys",
+ "js_bridge",
  "log",
  "mytil",
  "names",
