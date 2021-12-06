@@ -6,7 +6,6 @@ use yew::prelude::*;
 mod containers;
 mod domain;
 mod pages;
-mod repository;
 mod routing;
 
 use pages::{home::Home, room::Room};

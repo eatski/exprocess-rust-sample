@@ -3,8 +3,9 @@ use crate::{
         repository::RepositoryError, start, state::AppCommand, state::Member,
         state::PickCommand, state::Role, Runner,
     },
-    repository::fetch_members,
 };
+
+use js_bridge::fetch_members;
 use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, loading::loading, rolled::rolled};
 use yew::prelude::*;
 mod model;
