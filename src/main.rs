@@ -41,9 +41,8 @@ impl Component for App {
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        match (msg, &self.state) {
-            (_, State::Error) => false,
-            (Msg::Error, _) => {
+        match msg {
+            Msg::Error => {
                 self.state = State::Error;
                 true
             }
