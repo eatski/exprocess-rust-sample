@@ -19,7 +19,7 @@ pub fn app_state_to_view_state(app: &AppState, is_host: bool, your_id: &str,call
             members: members.iter().map(|m| MemberViewModel {name:m.name.clone(),you: m.id.as_str() == your_id}).collect(),
             host_form: is_host.then(|| callback.reform(Msg::PushCommand).reform(AppCommand::Pick)),
         },
-        AppState::Picked(picked) => ViewState::Picked(picked.picked.iter().cloned().collect()),
+        AppState::Picked(picked) => ViewState::Picked(picked.picked.clone()),
     }
 }
 
