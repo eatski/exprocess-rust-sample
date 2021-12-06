@@ -8,12 +8,13 @@ mod containers;
 mod domain;
 mod pages;
 mod repository;
+mod routing;
 
 use pages::{home::Home, room::Room};
-mod switch;
-use switch::{AppRoute, AppRouter, PublicUrlSwitch};
 
 use presentation::error;
+
+use crate::routing::{AppRoute, AppRouter};
 
 pub enum Msg {
     Sleep,
@@ -86,9 +87,9 @@ impl Component for App {
                 State::Error => error::error(),
                 State::Ok => {
                     let link = self.link.clone();
-                    let render = AppRouter::render(move |switch: PublicUrlSwitch| {
+                    let render = AppRouter::render(move |switch: AppRoute| {
                         let on_error = link.callback(|_| Msg::Error);
-                        match switch.route() {
+                        match switch {
                             AppRoute::Home => {
                                 html! { <Home on_error=on_error/> }
                             }

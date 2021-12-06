@@ -1,9 +1,7 @@
 use presentation::{home::home};
 use yew::prelude::*;
 use yew_router::{agent::RouteRequest, prelude::*};
-use crate::repository::{create_room};
-
-use crate::switch::AppRoute;
+use crate::{repository::{create_room}, routing::AppRoute};
 
 pub struct Home {
     state: State,
@@ -47,8 +45,8 @@ impl Component for Home {
                     move || on_error.clone().emit(())
                 );
                 let route = AppRoute::Room(id);
-                let mut dispatcher = RouteAgentDispatcher::new();
-                dispatcher.send(RouteRequest::ChangeRoute(route.into_route()));
+                let mut dispatcher: RouteAgentDispatcher<()> = RouteAgentDispatcher::new();
+                dispatcher.send(RouteRequest::ChangeRoute(route.into()));
             },
         }
         true
