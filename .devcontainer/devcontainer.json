@@ -8,6 +8,7 @@
     "settings": {
         "rust.target_dir": "/app/target"
     },
+    "forwardPorts": [3000,3001,8080],
     "extensions": [
         "rust-lang.rust",
         "vadimcn.vscode-lldb",

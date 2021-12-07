@@ -19,9 +19,9 @@ module.exports = {
       {
         test: [/\.js$/, /\.ts$/],
         exclude: /node_modules/,
-        loader: "esbuild-loader",
+        loader: "babel-loader",
         options: {
-            loader: 'ts',
+          presets: ["@babel/preset-typescript"]
         }
       }
     ],

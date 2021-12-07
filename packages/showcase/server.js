@@ -54,7 +54,7 @@ const server = http.createServer((request, response) => {
       rewrites: [ { source: "**", destination : "/index.html" }]
   });
 })
-
-server.listen(5000, () => {
-  console.log('Running at http://localhost:5000');
+const PORT = 3001;
+server.listen(PORT, () => {
+  console.log(`Running at http://localhost:${PORT}`);
 });
