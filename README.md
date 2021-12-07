@@ -22,5 +22,11 @@ npm run emu
 ## Open
 localhost:8080
 
+## Build WASM with Docker
+```bash
+docker-compose run wasm
+wasm-pack build --release
+```
+
 # Url
 https://pick-role.web.app/

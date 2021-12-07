@@ -1,0 +1,19 @@
+version: '3'
+services:
+  wasm:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: bash
+    tty: true
+    volumes:
+      - $PWD:/app
+  rust-dev:
+    image: rust:latest
+    container_name: rust_dev
+    working_dir: /app
+    volumes:
+      - ./:/app
+    tty: true
+    environment:
+      CARGO_BUILD_TARGET_DIR: /app/target
