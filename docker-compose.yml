@@ -1,0 +1,10 @@
+version: '3'
+services:
+  wasm:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: bash
+    tty: true
+    volumes:
+      - $PWD:/app
