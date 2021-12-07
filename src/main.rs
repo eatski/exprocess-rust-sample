@@ -10,7 +10,7 @@ mod routing;
 
 use pages::{home::Home, room::Room};
 
-use presentation::error;
+use presentation::{error};
 
 use crate::routing::{AppRoute, AppRouter};
 use crate::containers::sleeper::Sleeper;
@@ -77,7 +77,7 @@ impl Component for App {
                 html! {
                     <AppRouter
                         render=render
-                        redirect=AppRouter::redirect(|_| panic!())
+                        redirect=AppRouter::redirect(|_| AppRoute::Home)
                     />
                 }
             }
