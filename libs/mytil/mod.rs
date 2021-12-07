@@ -218,7 +218,7 @@ mod test {
     #[test]
     #[should_panic]
     fn test_cleaner_notcleaned() {
-        crate::Cleaner::from(TestCleanable::default());
+        let _ = crate::Cleaner::from(TestCleanable::default());
     }
     
     #[test]

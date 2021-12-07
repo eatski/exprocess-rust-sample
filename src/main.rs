@@ -10,7 +10,7 @@ mod routing;
 
 use pages::{home::Home, room::Room};
 
-use presentation::{error, not_found};
+use presentation::{error};
 
 use crate::routing::{AppRoute, AppRouter};
 use crate::containers::sleeper::Sleeper;
