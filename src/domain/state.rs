@@ -1,3 +1,5 @@
+use std::iter::repeat;
+
 use exprocess::core::ExprocessCore;
 use rand::{Rng, prelude::SliceRandom};
 use serde::{Deserialize, Serialize};
@@ -125,18 +127,16 @@ fn pick_roles_to_members<M,R : Clone,Rn: Rng>(
 ) -> Vec<R> {
     let mut roles : Vec<_>= roles
         .iter()
-        .flat_map(|(num,role)| (vec![role]).repeat(*num))
+        .flat_map(|(num,role)| repeat(role).take(*num))
         .collect();
     roles.shuffle(&mut rng);
-    (0..(members.len()))
-        .map (move |_| roles.remove(0).clone())
-        .collect()
+    roles.into_iter().cloned().take(members.len()).collect()
 }
 
 #[test]
 fn test_pick_roles_to_members() {
     let result = pick_roles_to_members(
-        &vec!["a","b","c"],vec![(2,"x"),(1,"y")],rand::rngs::mock::StepRng::new(0, 1)
+        &vec!["a","b","c"],vec![(2,"x"),(2,"y")],rand::rngs::mock::StepRng::new(0, 1)
     );
-    assert_eq!(result,["x","y","x"])
+    assert_eq!(result,["x","y","y"])
 }
