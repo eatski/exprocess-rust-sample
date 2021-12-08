@@ -6,4 +6,4 @@ services:
       dockerfile: Dockerfile
     tty: true
     volumes:
-      - ./:/app
+      - ../:/app
