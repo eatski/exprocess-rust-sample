@@ -1,4 +1,4 @@
-FROM rust:1.57.0-buster
+FROM rust:1.57.0
 WORKDIR /app
 # https://github.com/rustwasm/wasm-pack/issues/1079
 RUN cargo install wasm-pack --version 0.9.1
