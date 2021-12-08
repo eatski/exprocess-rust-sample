@@ -29,7 +29,7 @@ pub fn before_roll_host(members: &Vec<Member>,on_submit: &Callback<FormInputs>) 
     }
 }
 
-struct HostForm {
+pub struct HostForm {
     pub props: Props,
     pub inputs: Vec<RoleInput>,
     pub link: ComponentLink<Self>,
@@ -167,28 +167,27 @@ fn role_input_view(input:&RoleInput,callback: Callback<Msg>,index: usize,is_last
             index
         }
     });
+    let label_class = if is_first {"label"} else {"label is-hidden-tablet"};
     html! {
         <li class="is-grouped columns">
             <div class="control column">
-                {if is_first {html!{<label class="label">{"役職名"}</label>}} else {html! {}}}
+                <label class={label_class}>{"役職名"}</label>
                 <input class="input" type="text" value=name oninput=on_name_change />
             </div>
             <div class="control column is-2">
-                {if is_first {html!{<label class="label">{"数"}</label>}} else {html! {}}}
+                <label class={label_class}>{"数"}</label>
                 <input class="input" type="number" value=num min=1 onchange=on_num_change/>
             </div>
             <div class="control column is-2 is-flex is-align-items-center">
             {
-                if is_last {
+                is_last.then(|| {
                     let add = callback.reform(|_| Msg::AddInput);
                     html!{
                         <div class="icon is-medium is-clickable" onclick=add>
                             <i class="fas fa-plus-circle"></i>
                         </div>
                     }
-                } else {
-                    html!{}
-                }
+                }).unwrap_or_default()
             }
             </div>
             

@@ -4,6 +4,7 @@ use presentation::{
     meeting::{meeting_guest, GuestForm},
     members::Member,
     sleep::sleep,
+    before_role::HostForm,
 };
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
@@ -40,6 +41,9 @@ impl GalleryConfig for Config {
                     ("host", picture(|| todo!())),
                 ]),
             ),
+            ("role", dir([
+                ("form",picture(|| html!{<HostForm on_submit=Callback::noop() members_num=6/>}))
+            ])),
             ("sleep", picture(sleep)),
         ])
     }
