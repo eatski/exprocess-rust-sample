@@ -11,17 +11,22 @@ pub fn layout(main: Html) -> Html {
                         <strong>{"Roll Role"}</strong>
                     </a>
                 </div>
+                <div class="navbar-menu">
+                    <div class="navbar-end">
+                        <div class="navbar-item">
+                            <div class="buttons">
+                                <a class="button" href="https://github.com/itskihaga/exprocess-rust-sample">
+                                    {"Contact"}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </nav>
         </header>
-        
         <main class="my-main">
             {main}
         </main>
-        <footer class="footer my-bottom">
-            <div class="content has-text-centered">
-                <a href="https://github.com/itskihaga/exprocess-rust-sample">{"Githubリポジトリ"}</a>
-            </div>
-        </footer>
         </>
     }
 }
