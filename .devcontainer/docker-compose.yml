@@ -1,9 +1,7 @@
 version: '3'
 services:
   rust-dev:
-    build: 
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/itskihaga/rustyfi-docker
     tty: true
     volumes:
       - ../:/app:delegated
