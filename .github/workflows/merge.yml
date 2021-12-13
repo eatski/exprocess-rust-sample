@@ -24,7 +24,7 @@ jobs:
       - name: Build wasm
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          wasm-pack build --release
+          wasm-pack build --release --out-name app
       - name: Use node cache
         uses: actions/cache@v2
         with:
