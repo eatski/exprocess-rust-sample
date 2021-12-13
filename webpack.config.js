@@ -3,10 +3,11 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 
 const BUILD_MODE = "BUILD_MODE";
+const release = !["dev"].includes(process.env[BUILD_MODE]);
 
 /** @type import('webpack').Configuration */
 module.exports = {
-  mode: ["dev"].includes(process.env[BUILD_MODE]) ? "development" : "production",
+  mode: release ?  "production" : "development",
   entry: {
     app: path.resolve(__dirname, "index.ts"),
   },
@@ -44,7 +45,8 @@ module.exports = {
       }
     }),
     new webpack.EnvironmentPlugin({
-      [BUILD_MODE]: null
+      [BUILD_MODE]: null,
+      FIREBASE_CONFIG: release ? undefined : JSON.stringify(require("./firebase.config.dev.json"))
     }),
   ],
 };
