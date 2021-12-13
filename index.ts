@@ -1,4 +1,4 @@
-const wasmPromise = import("./pkg/roll_role");
+const wasmPromise = import("./pkg/app");
 import("./js").then(js => {
     //@ts-expect-error
     window["_wasm_js_bridge"] = js
