@@ -1,7 +1,0 @@
-version: '3'
-services:
-  rust-dev:
-    image: ghcr.io/itskihaga/rustyfi-docker
-    tty: true
-    volumes:
-      - ../:/app:delegated

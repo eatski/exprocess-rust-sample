@@ -26,7 +26,6 @@ struct Fetched {
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
     pub room_id : String,
-    pub host: Option<Callback<()>>,
     pub on_error: Callback<()>
 }
 
