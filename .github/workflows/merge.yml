@@ -39,7 +39,9 @@ jobs:
         env:
           FIREBASE_CONFIG: '${{ secrets.FIREBASE_CONFIG }}'
       - name: Prepare Deploy
-        run: cat firebase.json | jq '.hosting.site |= .+"${{ secrets.FIREBASE_HOSTING_SITE }}"' > firebase.json
+        run: echo `cat firebase.json | jq '.hosting.site |= .+"'$FIREBASE_HOSTING_SITE'"'` > firebase.json
+        env:
+          FIREBASE_HOSTING_SITE: ${{ secrets.FIREBASE_HOSTING_SITE }}
       - name: Deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
