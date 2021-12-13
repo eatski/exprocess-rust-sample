@@ -23,4 +23,4 @@ npm run emu
 localhost:8080
 
 # Url
-https://pick-role.web.app/
+https://rollrole.firebaseapp.com/
