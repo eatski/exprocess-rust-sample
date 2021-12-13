@@ -6,7 +6,7 @@
   "scripts": {
     "test": "cargo test --workspace",
     "dev": "wasm-pack build --dev && BUILD_MODE=dev webpack",
-    "emu": "firebase emulators:start",
+    "serve": "serve -s -p 8080 public",
     "build": "wasm-pack build --release && webpack",
     "build:showcase": "wasm-pack build -t web --dev packages/showcase",
     "serve:showcase": "node packages/showcase/server.js"
@@ -33,7 +33,6 @@
   },
   "devDependencies": {
     "ejs": "^3.1.6",
-    "firebase-tools": "^9.6.1",
     "serve": "^13.0.2"
   }
 }

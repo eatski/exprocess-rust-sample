@@ -49,3 +49,5 @@ jobs:
             ${{ runner.os }}-node-
       - name: Node build
         run: npm ci --production && npx webpack
+        env:
+          FIREBASE_CONFIG: '${{ secrets.FIREBASE_CONFIG }}'
