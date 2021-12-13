@@ -38,6 +38,8 @@ jobs:
         run: npm ci --production && npx webpack
         env:
           FIREBASE_CONFIG: '${{ secrets.FIREBASE_CONFIG }}'
+      - name: Prepare Deploy
+        run: cat firebase.json | jq '.hosting.site |= .+"${{ secrets.FIREBASE_HOSTING_SITE }}"' > firebase.json
       - name: Deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
