@@ -24,13 +24,13 @@ const res = ejs.renderFile(
       `
         <script>import("/showcase.js").then(init => init.default())</script>
         <style>
-          .cafeteria-root li{
+          .cafeteria-nav li{
             margin-left: 1rem;
           }
-          .cafeteria-root strong {
+          .cafeteria-nav strong {
             font-weight: bold;
           }
-          .cafeteria-root h2 {
+          .cafeteria-nav h2 {
             font-weight: bold;
             height: 2rem;
           }
