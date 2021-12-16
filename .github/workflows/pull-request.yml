@@ -48,6 +48,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Node build
-        run: npm ci --production && npx webpack
+        run: npm ci --production && tsc && npx webpack
         env:
           FIREBASE_CONFIG: '${{ secrets.FIREBASE_CONFIG }}'
