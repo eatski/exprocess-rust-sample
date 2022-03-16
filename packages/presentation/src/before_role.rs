@@ -132,7 +132,7 @@ impl Component for HostForm {
                     <div class="column is-offset-8"> 
                     { 
                         html! {
-                            <button class="button is-link" disabled=!valid onclick=on_submit>{"Roll"}</button>
+                            <button class="button is-link" disabled=!valid onclick=on_submit>{"決定"}</button>
                         }
                     }
                     </div>

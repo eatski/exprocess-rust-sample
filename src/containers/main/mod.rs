@@ -6,7 +6,7 @@ use crate::{
 };
 
 use js_bridge::fetch_members;
-use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, loading::loading, rolled::rolled};
+use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, loading::loading, rolled::rolled, standby::{standby, standby_guest}};
 use yew::prelude::*;
 mod model;
 use crate::containers::main::model::{app_state_to_view_state,ViewState,Msg};
@@ -106,14 +106,10 @@ impl Component for Main {
                     None => before_roll_guest(members),
                 }
             }
-            ViewState::Standby { members ,host_form} => {
+            ViewState::Standby { members: _ ,host_form,roles} => {
                 match host_form {
-                    Some(on_submit) => html! {
-                        <button onclick=on_submit.reform(|_| ()) >
-                            {"roll"}
-                        </button>
-                    },
-                    None => html! {<div>{"Guest"}</div>},
+                    Some(on_submit) => standby(roles, on_submit),
+                    None => standby_guest(roles),
                 }
             },
             

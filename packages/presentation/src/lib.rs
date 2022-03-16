@@ -13,3 +13,5 @@ pub mod rolled;
 pub mod error;
 pub mod not_found;
 pub mod sleep;
+pub mod roles;
+pub mod standby;
