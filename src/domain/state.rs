@@ -1,4 +1,4 @@
-use std::iter::repeat;
+use std::{iter::repeat, collections::HashMap, hash::Hash};
 
 use exprocess::core::ExprocessCore;
 use rand::{Rng, prelude::SliceRandom};
@@ -9,19 +9,35 @@ type MemberId = String;
 //FIXME: 本来は名前やIDなどの情報は辞書を作成し、数値型で管理するのが理想
 #[derive(Serialize, Deserialize,Clone)]
 pub struct Member {
+    pub id: MemberId,
     pub name: String,
-    pub id: MemberId
 }
+
+#[derive(Serialize, Deserialize,Clone,Hash,PartialEq,Eq)]
+pub struct MemberKey(String);
 
 #[derive(Serialize, Deserialize,Clone)]
 pub struct Role {
     pub name: String
 }
 
+#[derive(Serialize, Deserialize,Clone,Hash,PartialEq,Eq)]
+pub struct RoleKey(usize);
+
 pub enum AppState {
     Blank,
-    Standby(Vec<Member>),
-    Picked(PickedState)
+    Setting(HashMap<MemberKey,Member>),
+    Started(Setting,Started),
+}
+
+pub struct Setting {
+    pub members: HashMap<MemberKey,Member>,
+    pub roles: HashMap<RoleKey,ItemAndHowMany<Role>>
+}
+
+pub enum Started {
+    Standby,
+    Picked(HashMap<MemberKey,RoleKey>)
 }
 
 impl Default for AppState {
@@ -30,32 +46,28 @@ impl Default for AppState {
     }
 }
 
-pub struct PickedState {
-    pub picked: Vec<(Member,Role)>
-}
-
-#[derive(Serialize, Deserialize,Clone)]
+#[derive(Serialize,Deserialize,Clone)]
 pub enum AppCommand {
     Init(Vec<Member>),
-    Pick(PickCommand)
+    SetRole(SetRole),
+    Pick
 }
+
+pub type SetRole = Vec<ItemAndHowMany<Role>>;
 
 
 type ItemAndHowMany<Item> = (usize,Item);
-#[derive(Serialize, Deserialize,Clone)]
-pub struct PickCommand {
-    pub roles: Vec<ItemAndHowMany<Role>>
-}
 
 #[derive(Serialize, Deserialize,Clone)]
 pub enum AppResult {
     Init(Vec<Member>),
+    SetRole(Vec<ItemAndHowMany<Role>>),
     Picked(PickResult)
 }
 
 #[derive(Serialize, Deserialize,Clone)]
 pub struct PickResult {
-    picked: Vec<Role>
+    picked: HashMap<MemberKey,RoleKey>
 }
 
 pub struct AppCore;
@@ -80,13 +92,14 @@ impl ExprocessCore for AppCore {
     fn resolve(state: &Self::State,command: Self::Command) -> Self::Result {
         match command {
             AppCommand::Init(members) => AppResult::Init(members),
-            AppCommand::Pick(command) => {
+            AppCommand::SetRole(roles) => AppResult::SetRole(roles),
+            AppCommand::Pick => {
                 match state {
-                    AppState::Standby(members) => AppResult::Picked(
+                    AppState::Started(setting,_) => AppResult::Picked(
                         PickResult {
                             picked: pick_roles_to_members(
-                                &members,
-                                command.roles,
+                                &setting.members.keys().cloned().collect(),
+                                &setting.roles.iter().map(|(key,(num,_))|(*num,key.clone())).collect(),
                                 &mut rand::thread_rng()
                             )
                         }
@@ -94,6 +107,7 @@ impl ExprocessCore for AppCore {
                     _ => panic!(),
                 }
             },
+            
         }
     }
     ///
@@ -101,42 +115,56 @@ impl ExprocessCore for AppCore {
     /// 
     fn reducer(state: &mut Self::State, result: Self::Result) {
         *state = match result {
-            AppResult::Init(members) => AppState::Standby(members),
+            AppResult::Init(members) => AppState::Setting(members.into_iter().map(|member| (MemberKey(member.id.clone()),member)).collect()),
+            AppResult::SetRole(roles) => {
+                match state {
+                    AppState::Setting(members) => AppState::Started(
+                        Setting {
+                            members: drain(members),
+                            roles: roles.into_iter().enumerate().map(|(index,(how_many,role))| (RoleKey(index),(how_many,role))).collect()
+                        }, Started::Standby
+                    ),
+                    _ => panic!(),
+                }
+                    
+            },
             AppResult::Picked(result) => {
                 match state {
-                    AppState::Standby(members) => {
-                        AppState::Picked(PickedState {
-                            picked: result
-                                .picked
-                                .into_iter()
-                                .map(move |role| (members.remove(0),role))
-                                .collect()
-                        })
-                    },
+                    AppState::Started(setting,_) => AppState::Started(
+                        Setting {
+                            members: drain(&mut setting.members),
+                            roles: drain(&mut setting.roles)
+                        }, Started::Picked(result.picked)
+                    ),
                     _ => todo!(),
                 }
             }
+            
         };
     }
 }
 
-fn pick_roles_to_members<M,R : Clone,Rn: Rng>(
+fn drain<K: Eq + Hash,T>(target: &mut HashMap<K,T>) -> HashMap<K,T> {
+    target.drain().collect()
+}
+
+fn pick_roles_to_members<M: Clone + Eq + Hash,R : Clone,Rn: Rng>(
     members: &Vec<M>,
-    roles: Vec<ItemAndHowMany<R>>,
+    roles: &Vec<ItemAndHowMany<R>>,
     mut rng: Rn
-) -> Vec<R> {
+) -> HashMap<M,R> {
     let mut roles : Vec<_>= roles
         .iter()
         .flat_map(|(num,role)| repeat(role).take(*num))
         .collect();
     roles.shuffle(&mut rng);
-    roles.into_iter().cloned().take(members.len()).collect()
+    members.iter().zip(roles.into_iter()).map(|(m,r)| (m.clone(),r.clone())).collect()
 }
 
 #[test]
 fn test_pick_roles_to_members() {
     let result = pick_roles_to_members(
-        &vec!["a","b","c"],vec![(2,"x"),(2,"y")],rand::rngs::mock::StepRng::new(0, 1)
+        &vec!["a","b","c"],&vec![(2,"x"),(2,"y")],rand::rngs::mock::StepRng::new(0, 1)
     );
-    assert_eq!(result,["x","y","y"])
+    assert_eq!(result,[("a","x"),("b","y"),("c","y")].iter().cloned().collect());
 }

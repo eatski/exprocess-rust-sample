@@ -1,7 +1,7 @@
 use crate::{
     domain::{
         repository::RepositoryError, start, state::AppCommand, state::Member,
-        state::PickCommand, state::Role, Runner,
+        state::Role, Runner,
     },
 };
 
@@ -95,25 +95,32 @@ impl Component for Main {
     fn view(&self) -> Html {
         match &self.state {
             ViewState::Blank => loading(),
-            ViewState::Standby { members, host_form } => {
+            ViewState::Setting {members,host_form}=> {
                 match host_form {
                     Some(on_submit) => before_roll_host(
                         members,
                         &on_submit.reform(
-                            |inputs: FormInputs| PickCommand { roles: inputs.into_iter().map(|input| (input.num,Role {name: input.name})).collect() }
+                            |inputs: FormInputs| inputs.into_iter().map(|input| (input.num,Role {name: input.name})).collect() 
                         )
                     ),
                     None => before_roll_guest(members),
                 }
             }
-            ViewState::Picked(list) => {
-                let (you, your_role) = list
-                    .iter()
-                    .find(move |(member, _)| member.id == self.props.your_id)
-                    .expect("No Player Matches");
-
-                rolled(&you.name,&your_role.name)
+            ViewState::Standby { members ,host_form} => {
+                match host_form {
+                    Some(on_submit) => html! {
+                        <button onclick=on_submit.reform(|_| ()) >
+                            {"roll"}
+                        </button>
+                    },
+                    None => html! {<div>{"Guest"}</div>},
+                }
+            },
+            
+            ViewState::Picked(member,role) => {
+                rolled(&member.name,&role.name)
             }
+            
         }
     }
 }
