@@ -1,12 +1,12 @@
 use crate::{
     domain::{
         repository::RepositoryError, start, state::AppCommand, state::Member,
-        state::PickCommand, state::Role, Runner,
+        state::Role, Runner,
     },
 };
 
 use js_bridge::fetch_members;
-use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, loading::loading, rolled::rolled};
+use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, loading::loading, rolled::rolled, standby::{standby, standby_guest}};
 use yew::prelude::*;
 mod model;
 use crate::containers::main::model::{app_state_to_view_state,ViewState,Msg};
@@ -95,25 +95,28 @@ impl Component for Main {
     fn view(&self) -> Html {
         match &self.state {
             ViewState::Blank => loading(),
-            ViewState::Standby { members, host_form } => {
+            ViewState::Setting {members,host_form}=> {
                 match host_form {
                     Some(on_submit) => before_roll_host(
                         members,
                         &on_submit.reform(
-                            |inputs: FormInputs| PickCommand { roles: inputs.into_iter().map(|input| (input.num,Role {name: input.name})).collect() }
+                            |inputs: FormInputs| inputs.into_iter().map(|input| (input.num,Role {name: input.name})).collect() 
                         )
                     ),
                     None => before_roll_guest(members),
                 }
             }
-            ViewState::Picked(list) => {
-                let (you, your_role) = list
-                    .iter()
-                    .find(move |(member, _)| member.id == self.props.your_id)
-                    .expect("No Player Matches");
-
-                rolled(&you.name,&your_role.name)
+            ViewState::Standby { members: _ ,host_form,roles} => {
+                match host_form {
+                    Some(on_submit) => standby(roles, on_submit),
+                    None => standby_guest(roles),
+                }
+            },
+            
+            ViewState::Picked(member,role) => {
+                rolled(&member.name,&role.name)
             }
+            
         }
     }
 }
