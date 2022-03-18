@@ -5,7 +5,7 @@ use crate::{how_to_use::how_to_use, members::{Member, members_view}};
 
 pub type FormInputs = Vec<RoleInput>;
 
-pub fn before_roll_guest(members: &Vec<Member>) -> Html {
+pub fn set_role_guest(members: &Vec<Member>) -> Html {
     html! {
         <section class="section">
             <h3 class="title is-4">{"ホストが役職を決定しています。"}</h3>
@@ -14,7 +14,7 @@ pub fn before_roll_guest(members: &Vec<Member>) -> Html {
     }
 }
 
-pub fn before_roll_host(members: &Vec<Member>,on_submit: &Callback<FormInputs>) -> Html {
+pub fn set_role_host(members: &Vec<Member>,on_submit: &Callback<FormInputs>) -> Html {
     html! {
         <section class="section columns">
             <div class="column">
