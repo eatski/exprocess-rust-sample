@@ -6,7 +6,7 @@ use crate::{
 };
 
 use js_bridge::fetch_members;
-use presentation::{before_role::{FormInputs, set_role_guest, set_role_host}, loading::loading, rolled::rolled, standby::{standby, standby_guest}};
+use presentation::{set_role::{FormInputs, set_role_guest, set_role_host}, loading::loading, rolled::rolled, standby::{standby, standby_guest}};
 use yew::prelude::*;
 mod model;
 use crate::containers::main::model::{app_state_to_view_state,ViewState,Msg};

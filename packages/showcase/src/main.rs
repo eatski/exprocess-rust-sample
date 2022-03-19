@@ -4,7 +4,7 @@ use presentation::{
     meeting::{meeting_guest, GuestForm},
     members::Member,
     sleep::sleep,
-    before_role::HostForm,
+    set_role::HostForm,
 };
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
