@@ -114,7 +114,7 @@ impl Component for Main {
             },
             
             ViewState::Picked(member,role) => {
-                rolled(&member.name,&role.name)
+                rolled(&member.name,&role.name,None)
             }
             
         }
