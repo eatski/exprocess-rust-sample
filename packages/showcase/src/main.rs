@@ -43,7 +43,7 @@ impl GalleryConfig for Config {
             ),
             ("role", dir([
                 ("form",picture(|| html!{<HostForm on_submit=Callback::noop() members_num=6/>})),
-                ("picked", picture(|| rolled::rolled("太郎","人狼", Some(Callback::noop())))),
+                ("picked", picture(|| rolled::rolled("太郎","人狼", &Some(Callback::noop())))),
             ])),
             ("sleep", picture(sleep)),
         ])

@@ -113,8 +113,8 @@ impl Component for Main {
                 }
             },
             
-            ViewState::Picked(member,role) => {
-                rolled(&member.name,&role.name,None)
+            ViewState::Picked {member,role , restart_form} => {
+                rolled(&member.name,&role.name,restart_form)
             }
             
         }
