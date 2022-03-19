@@ -7,7 +7,7 @@ mod main_vis;
 mod join_form;
 pub mod loading;
 pub mod members;
-pub mod before_role;
+pub mod set_role;
 mod how_to_use;
 pub mod rolled;
 pub mod error;

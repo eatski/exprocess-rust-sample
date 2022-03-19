@@ -6,7 +6,7 @@ use crate::{
 };
 
 use js_bridge::fetch_members;
-use presentation::{before_role::{FormInputs, before_roll_guest, before_roll_host}, loading::loading, rolled::rolled, standby::{standby, standby_guest}};
+use presentation::{set_role::{FormInputs, set_role_guest, set_role_host}, loading::loading, rolled::rolled, standby::{standby, standby_guest}};
 use yew::prelude::*;
 mod model;
 use crate::containers::main::model::{app_state_to_view_state,ViewState,Msg};
@@ -97,13 +97,13 @@ impl Component for Main {
             ViewState::Blank => loading(),
             ViewState::Setting {members,host_form}=> {
                 match host_form {
-                    Some(on_submit) => before_roll_host(
+                    Some(on_submit) => set_role_host(
                         members,
                         &on_submit.reform(
                             |inputs: FormInputs| inputs.into_iter().map(|input| (input.num,Role {name: input.name})).collect() 
                         )
                     ),
-                    None => before_roll_guest(members),
+                    None => set_role_guest(members),
                 }
             }
             ViewState::Standby { members: _ ,host_form,roles} => {
@@ -113,8 +113,8 @@ impl Component for Main {
                 }
             },
             
-            ViewState::Picked(member,role) => {
-                rolled(&member.name,&role.name)
+            ViewState::Picked {member,role , restart_form} => {
+                rolled(&member.name,&role.name,restart_form)
             }
             
         }

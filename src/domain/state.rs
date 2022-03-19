@@ -50,7 +50,8 @@ impl Default for AppState {
 pub enum AppCommand {
     Init(Vec<Member>),
     SetRole(SetRole),
-    Pick
+    Pick,
+    Restart,
 }
 
 pub type SetRole = Vec<ItemAndHowMany<Role>>;
@@ -62,7 +63,8 @@ type ItemAndHowMany<Item> = (usize,Item);
 pub enum AppResult {
     Init(Vec<Member>),
     SetRole(Vec<ItemAndHowMany<Role>>),
-    Picked(PickResult)
+    Picked(PickResult),
+    Restart,
 }
 
 #[derive(Serialize, Deserialize,Clone)]
@@ -107,6 +109,7 @@ impl ExprocessCore for AppCore {
                     _ => panic!(),
                 }
             },
+            AppCommand::Restart => AppResult::Restart,
             
         }
     }
@@ -139,7 +142,17 @@ impl ExprocessCore for AppCore {
                     _ => todo!(),
                 }
             }
-            
+            AppResult::Restart => {
+                match state {
+                    AppState::Started(setting,_) => AppState::Started(
+                        Setting {
+                            members: drain(&mut setting.members),
+                            roles: drain(&mut setting.roles)
+                        }, Started::Standby
+                    ),
+                    _ => panic!(),
+                }
+            },
         };
     }
 }
