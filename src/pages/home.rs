@@ -7,7 +7,6 @@ use js_bridge::{create_room};
 
 pub struct Home {
     state: State,
-    props: Props
 }
 
 pub enum State {
@@ -32,15 +31,14 @@ impl Component for Home {
         Self {
             state: State::Init {
                 on_submit: ctx.link().callback(Msg::CreateRoom)
-            },
-            props: ctx.props().clone()
+            }
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>,msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>,msg: Self::Message) -> bool {
         match msg {
             Msg::CreateRoom(name) => {
-                let on_error = self.props.on_error.clone();
+                let on_error = ctx.props().on_error.clone();
                 let id = create_room(
                     &name,
                     || {},

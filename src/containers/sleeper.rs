@@ -4,7 +4,6 @@ use webutil::util::set_timeout_no_mousemove;
 use yew::{Children, Component, Properties, Context};
 
 pub struct Sleeper {
-    props: Props,
     sleep: bool,
     cleaner: Cleaner<FnOnceCleanable>,
 }
@@ -23,9 +22,8 @@ impl Component for Sleeper {
 
     type Properties = Props;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self {
-            props: ctx.props().clone(),
             sleep: false,
             cleaner: Cleaner::empty(),
         }
@@ -40,11 +38,11 @@ impl Component for Sleeper {
         }
     }
 
-    fn view(&self,_ctx: &Context<Self>,) -> yew::Html {
+    fn view(&self,ctx: &Context<Self>,) -> yew::Html {
         if self.sleep {
             sleep()
         } else {
-            self.props.children.iter().collect()
+            ctx.props().children.iter().collect()
         }
     }
 

@@ -14,7 +14,6 @@ use crate::containers::main::model::{app_state_to_view_state,ViewState,Msg};
 pub struct Main {
     runner: Runner,
     state: ViewState,
-    props: Props,
 }
 
 #[derive(Clone, Properties,PartialEq)]
@@ -53,18 +52,17 @@ impl Component for Main {
         Main {
             state: ViewState::Blank,
             runner,
-            props,
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::UpdateState(state) => {
-                if matches!(state, ViewState::Blank) && self.props.is_host {
+                if matches!(state, ViewState::Blank) && ctx.props().is_host {
                     let link = ctx.link().clone();
-                    let on_error =  self.props.on_error.clone();
+                    let on_error =  ctx.props().on_error.clone();
                     fetch_members(
-                        self.props.room_id.as_str(),
+                        ctx.props().room_id.as_str(),
                         move |members| {
                             let msg = Msg::PushCommand(AppCommand::Init(
                                 members
@@ -87,7 +85,7 @@ impl Component for Main {
         true
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         match &self.state {
             ViewState::Blank => loading(),
             ViewState::Setting {members,host_form}=> {

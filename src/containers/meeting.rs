@@ -8,7 +8,6 @@ use js_bridge::{JSFunctionCleaner, register_member, sync_members};
 
 // for Guest
 pub struct Meeting {
-    props: Props,
     state: State,
     on_destroy: JSFunctionCleaner
 }
@@ -56,7 +55,6 @@ impl Component for Meeting {
             move || on_error.clone().emit(())
         );
         Self {
-            props,
             state: State::Loading,
             on_destroy
         }
@@ -83,9 +81,9 @@ impl Component for Meeting {
                     },
                     _ => panic!()
                 }
-                let on_error = self.props.on_error.clone();
+                let on_error = ctx.props().on_error.clone();
                 register_member(
-                    self.props.room_id.as_str(),
+                    ctx.props().room_id.as_str(),
                     name.as_str(),
                     move || on_error.emit(())
                 );
@@ -95,11 +93,11 @@ impl Component for Meeting {
         }
     }
 
-    fn destroy(&mut self, ctx: &Context<Self>) {
+    fn destroy(&mut self, _ctx: &Context<Self>) {
         self.on_destroy.clean();
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         match &self.state {
             State::Loading => loading(),
             State::Fetched (fetched) => {
@@ -112,7 +110,6 @@ impl Component for Meeting {
 // for Host
 
 pub struct MeetingHost {
-    props: PropsHost,
     state: StateHost,
     on_destroy: JSFunctionCleaner
 }
@@ -158,7 +155,6 @@ impl Component for MeetingHost {
             move || on_error.clone().emit(())
         );
         Self {
-            props,
             state: StateHost::Loading,
             on_destroy
         }
@@ -177,11 +173,11 @@ impl Component for MeetingHost {
         self.on_destroy.clean();
     }
 
-    fn view(&self, _ctx: &Context<Self>, ) -> Html {
+    fn view(&self, ctx: &Context<Self>, ) -> Html {
         match &self.state {
             StateHost::Loading => loading(),
             StateHost::Fetched { members } => {
-                meeting_host(members,&self.props.start.reform(|_| ()))
+                meeting_host(members,&ctx.props().start.reform(|_| ()))
             },
         }
         
