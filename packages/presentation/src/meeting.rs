@@ -54,7 +54,3 @@ pub fn meeting_host(members:&Vec<Member>,start: &Callback<()>) -> Html {
         </div>
     }
 }
-
-
-
-

@@ -138,11 +138,10 @@ impl Component for MeetingHost {
     type Properties = PropsHost;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let props = ctx.props().clone();
         let update = ctx.link().callback(MsgHost::UpdateMember);
-        let on_error = props.on_error.clone();
+        let on_error = ctx.props().on_error.clone();
         let on_destroy = sync_members(
-            props.room_id.as_str(), 
+            ctx.props().room_id.as_str(), 
                 move |members| {
                     let members = 
                         members

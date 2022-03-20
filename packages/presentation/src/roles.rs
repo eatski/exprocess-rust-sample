@@ -5,16 +5,6 @@ pub struct Role {
 }
 
 pub fn roles_table(roles: &Vec<(usize,Role)>) -> Html {
-    let roles = roles.iter().map(|(num,role)| html! {
-        <tr>
-            <td>
-                <span>{role.name.as_str()}</span>
-            </td>
-            <td>
-                {num}
-            </td>
-        </tr>
-    });
     html! {
         <table class="table">
             <thead>
@@ -24,7 +14,16 @@ pub fn roles_table(roles: &Vec<(usize,Role)>) -> Html {
                 </tr>
             </thead>
             <tbody>
-                {for roles}
+                {for roles.iter().map(|(num,role)| html! {
+                    <tr>
+                        <td>
+                            <span>{role.name.as_str()}</span>
+                        </td>
+                        <td>
+                            {num}
+                        </td>
+                    </tr>
+                })}
             </tbody>
         </table>
     }

@@ -6,16 +6,6 @@ pub struct Member {
 }
 
 pub fn members_view(members:&Vec<Member>)-> Html {
-    let members = members.iter().map(|member| html! {
-        <tr>
-            <td>
-                <span>{member.name.as_str()}</span>
-            </td>
-            <td>
-                {if member.you {html! {<span class="tag is-primary ml-2">{"YOU"}</span>}} else {html! {}}}
-            </td>
-        </tr>
-    });
     html! {
         <table class="table">
             <thead>
@@ -25,7 +15,16 @@ pub fn members_view(members:&Vec<Member>)-> Html {
                 </tr>
             </thead>
             <tbody>
-                {for members}
+                {for members.iter().map(|member| html! {
+                    <tr>
+                        <td>
+                            <span>{member.name.as_str()}</span>
+                        </td>
+                        <td>
+                            {if member.you {html! {<span class="tag is-primary ml-2">{"YOU"}</span>}} else {html! {}}}
+                        </td>
+                    </tr>
+                })}
             </tbody>
         </table>
     }
