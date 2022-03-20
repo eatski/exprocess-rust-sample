@@ -1,6 +1,7 @@
 use presentation::{home::home};
 use yew::prelude::*;
-use yew_router::{agent::RouteRequest, prelude::*};
+use yew_router::history::{AnyHistory, History};
+use yew_router::{prelude::*};
 use crate::{routing::AppRoute};
 use js_bridge::{create_room};
 
@@ -19,7 +20,7 @@ pub enum Msg {
     CreateRoom(String)
 }
 
-#[derive(Properties,Clone)]
+#[derive(Properties,Clone,PartialEq)]
 pub struct Props {
     pub on_error: Callback<()>
 }
@@ -27,16 +28,16 @@ impl Component for Home {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         Self {
             state: State::Init {
-                on_submit: link.callback(Msg::CreateRoom)
+                on_submit: ctx.link().callback(Msg::CreateRoom)
             },
-            props
+            props: ctx.props().clone()
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>,msg: Self::Message) -> bool {
         match msg {
             Msg::CreateRoom(name) => {
                 let on_error = self.props.on_error.clone();
@@ -45,19 +46,15 @@ impl Component for Home {
                     || {},
                     move || on_error.clone().emit(())
                 );
-                let route = AppRoute::Room(id);
-                let mut dispatcher: RouteAgentDispatcher<()> = RouteAgentDispatcher::new();
-                dispatcher.send(RouteRequest::ChangeRoute(route.into()));
+                let route = AppRoute::Room { id };
+                let history = AnyHistory::Browser(BrowserHistory::new());
+                history.push(route);
             },
         }
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        false
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self,_ctx: &Context<Self>) -> Html {
         match &self.state {
             State::Init { on_submit } => home(on_submit),
         }

@@ -15,7 +15,7 @@ pub fn home(on_submit: &Callback<String>) -> Html {
                 }
             )}
             <div class="section">
-                <OpenForm on_submit=on_submit />
+                <OpenForm on_submit={on_submit} />
             </div>
         </>
     }

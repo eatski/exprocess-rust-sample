@@ -7,7 +7,7 @@ pub fn standby(roles: &Vec<(usize,Role)>, start: &Callback<()>) -> Html {
         <section class="section">
             <h3 class="title is-4">{"準備OK!!"}</h3>
             {roles_table(roles)}
-            <button onclick=start.reform(|_| ()) class="button is-link">{"Roll"}</button>
+            <button onclick={start.reform(|_| ())} class="button is-link">{"Roll"}</button>
         </section>
     }
 }

@@ -29,7 +29,7 @@ pub fn guest_form(form: &GuestForm) -> Html {
     match form {
         GuestForm::Joinable { join } => {
             html! {
-                <JoinForm on_submit=join />
+                <JoinForm on_submit={join} />
             }
         },
         GuestForm::Joined => html! {
@@ -46,7 +46,7 @@ pub fn meeting_host(members:&Vec<Member>,start: &Callback<()>) -> Html {
             <div class="column">
                 <h3 class="title is-4">{"参加者を集めましょう。"}</h3>
                 {members_view(members)}
-                <button onclick=onclick class="button is-link">{"はじめる"}</button>
+                <button {onclick} class="button is-link">{"はじめる"}</button>
             </div>
             <div class="column">
                 {how_to_use()}

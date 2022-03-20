@@ -8,7 +8,6 @@ use crate::containers::meeting::{Meeting,MeetingHost};
 pub struct Room {
     state: State,
     props: Props,
-    link: ComponentLink<Self>,
     on_destroy: JSFunctionCleaner
 }
 
@@ -25,7 +24,7 @@ pub enum Msg {
     Start
 }
 
-#[derive(Clone, Debug, Properties)]
+#[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub room_id: String,
     pub on_error: Callback<()>
@@ -35,7 +34,7 @@ impl Component for Room {
     type Message = Msg;
     type Properties = Props;
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::UpdateRoom(room) => self.state = State::Fetched(room,get_your_id(self.props.room_id.as_str())),
             Msg::RoomNotExists => self.state = State::NotExists,
@@ -48,31 +47,27 @@ impl Component for Room {
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        panic!()
-    }
-
-    fn destroy(&mut self) {
+    fn destroy(&mut self,_ctx: &Context<Self>) {
         self.on_destroy.clean();
     }
 
-    fn view(&self) -> Html {
+    fn view(&self,ctx: &Context<Self>) -> Html {
         match &self.state {
             State::Loading => loading(),
             State::Fetched(room,your_id) => match room.phase {
                 Phase::Meeting =>  if !room.is_host {
-                    html! {<Meeting room_id=self.props.room_id.clone() on_error=self.props.on_error.clone()/>}
+                    html! {<Meeting room_id={self.props.room_id.clone()} on_error={self.props.on_error.clone()}/>}
                 } else {
-                    let start = self.link.callback(|_| Msg::Start);
-                    html! {<MeetingHost room_id=self.props.room_id.clone() start=start on_error=self.props.on_error.clone()/>}
+                    let start = ctx.link().callback(|_| Msg::Start);
+                    html! {<MeetingHost room_id={self.props.room_id.clone()} start={start} on_error={self.props.on_error.clone()}/>}
                 },
                 Phase::Started => match your_id {
                     Some(your_id) => html! {
                         <Main 
-                            is_host=room.is_host 
-                            room_id=self.props.room_id.clone()
-                            your_id=your_id.clone()
-                            on_error=self.props.on_error.clone()
+                            is_host={room.is_host}
+                            room_id={self.props.room_id.clone()}
+                            your_id={your_id.clone()}
+                            on_error={self.props.on_error.clone()}
                         />
                     },
                     None => not_found(),
@@ -83,9 +78,10 @@ impl Component for Room {
             State::NotExists => not_found(),
         }
     }
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let room_id = props.room_id.as_str();
-        let callback = link.callback(
+    fn create(ctx: &Context<Self>) -> Self {
+        let props = ctx.props().clone();
+        let room_id = ctx.props().room_id.as_str();
+        let callback = ctx.link().callback(
              |room : Option<RoomData>| room.map_or(Msg::RoomNotExists, Msg::UpdateRoom)
         );
         let on_error = props.on_error.clone();
@@ -97,7 +93,6 @@ impl Component for Room {
         Self {
             state: State::Loading,
             props,
-            link,
             on_destroy
         }
     }

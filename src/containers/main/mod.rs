@@ -15,10 +15,9 @@ pub struct Main {
     runner: Runner,
     state: ViewState,
     props: Props,
-    link: ComponentLink<Self>,
 }
 
-#[derive(Clone, Properties)]
+#[derive(Clone, Properties,PartialEq)]
 pub struct Props {
     pub is_host: bool,
     pub room_id: String,
@@ -30,8 +29,9 @@ impl Component for Main {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let link_listener = link.clone();
+    fn create(ctx: &Context<Self>) -> Self {
+        let props = ctx.props().clone();
+        let link_listener = ctx.link().clone();
         let link_on_error = props.on_error.clone();
         let is_host = props.is_host;
         let your_id = props.your_id.clone();
@@ -54,15 +54,14 @@ impl Component for Main {
             state: ViewState::Blank,
             runner,
             props,
-            link,
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::UpdateState(state) => {
                 if matches!(state, ViewState::Blank) && self.props.is_host {
-                    let link = self.link.clone();
+                    let link = ctx.link().clone();
                     let on_error =  self.props.on_error.clone();
                     fetch_members(
                         self.props.room_id.as_str(),
@@ -88,11 +87,7 @@ impl Component for Main {
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        panic!()
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.state {
             ViewState::Blank => loading(),
             ViewState::Setting {members,host_form}=> {

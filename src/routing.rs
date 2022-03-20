@@ -1,11 +1,11 @@
-use yew_router::{Switch, router::Router};
+use yew_router::{Routable};
 
-#[derive(Clone, Debug, Switch)]
+
+
+#[derive(Clone, Debug,PartialEq,Routable)]
 pub enum AppRoute {
-    #[to = "/!"]
+    #[at("/")]
     Home,
-    #[to = "/{*:id}"]
-    Room(String),
+    #[at("/:id")]
+    Room { id: String },
 }
-
-pub type AppRouter = Router<AppRoute>;

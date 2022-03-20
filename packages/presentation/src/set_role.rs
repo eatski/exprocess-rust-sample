@@ -1,7 +1,7 @@
 use mytil::validate_no_duplicate;
 
 use yew::{prelude::*};
-use crate::{how_to_use::how_to_use, members::{Member, members_view}};
+use crate::{how_to_use::how_to_use, members::{Member, members_view}, util::{get_value_from_event, get_value_from_input}};
 
 pub type FormInputs = Vec<RoleInput>;
 
@@ -20,7 +20,7 @@ pub fn set_role_host(members: &Vec<Member>,on_submit: &Callback<FormInputs>) -> 
             <div class="column">
                 <h3 class="title is-4">{"役職を入力しましょう。"}</h3>
                 {members_view(members)}
-                <HostForm on_submit=on_submit members_num=members.len()/>
+                <HostForm {on_submit} members_num={members.len()}/>
             </div>
             <div class="column">
                 {how_to_use()}
@@ -32,7 +32,6 @@ pub fn set_role_host(members: &Vec<Member>,on_submit: &Callback<FormInputs>) -> 
 pub struct HostForm {
     pub props: Props,
     pub inputs: Vec<RoleInput>,
-    pub link: ComponentLink<Self>,
 }
 
 #[derive(Clone)]
@@ -64,18 +63,18 @@ impl Component for HostForm {
 
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
+        let props = ctx.props().clone();
         Self {
             inputs: vec![
                 RoleInput {name:String::from("Hero"),num:1},
                 RoleInput {name:String::from("Mob"),num:props.members_num - 1}
             ],
             props,
-            link,
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>,msg: Self::Message) -> bool {
         match msg {
             Msg::UpdateNum { index, num } => {
                 let mut input = self
@@ -98,13 +97,8 @@ impl Component for HostForm {
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        //FIXME: 何？
-        false
-    }
-
-    fn view(&self) -> Html {
-        let link = self.link.clone();
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let link = ctx.link().clone();
         let len = self.inputs.len();
         let inputs = self
             .inputs
@@ -132,7 +126,7 @@ impl Component for HostForm {
                     <div class="column is-offset-8"> 
                     { 
                         html! {
-                            <button class="button is-link" disabled=!valid onclick=on_submit>{"決定"}</button>
+                            <button class="button is-link" disabled={!valid} onclick={on_submit}>{"決定"}</button>
                         }
                     }
                     </div>
@@ -152,18 +146,17 @@ impl Component for HostForm {
 fn role_input_view(input:&RoleInput,callback: Callback<Msg>,index: usize,is_last:bool,is_first: bool) -> Html {
     let num = input.num.to_string();
     let name = input.name.clone();
-    let on_num_change = callback.reform(move |change| {
-        match change {
-            ChangeData::Value(value) => Msg::UpdateNum {
-                index,
-                num: value.parse().unwrap()
-            },
-            _ => panic!()
+    let on_num_change = callback.reform(move |event| {
+        let num = get_value_from_event(event);
+        Msg::UpdateNum {
+            index,
+            num: num.parse().expect("input value is not number")
         }
     });
-    let on_name_change = callback.reform(move |input: InputData| {
+    let on_name_change = callback.reform(move |event: InputEvent| {
+        let name = get_value_from_input(event);
         Msg::UpdateName {
-            name:input.value,
+            name,
             index
         }
     });
@@ -172,18 +165,18 @@ fn role_input_view(input:&RoleInput,callback: Callback<Msg>,index: usize,is_last
         <li class="is-grouped columns">
             <div class="control column">
                 <label class={label_class}>{"役職名"}</label>
-                <input class="input" type="text" value=name oninput=on_name_change />
+                <input class="input" type="text" value={name} oninput={on_name_change} />
             </div>
             <div class="control column is-2">
                 <label class={label_class}>{"数"}</label>
-                <input class="input" type="number" value=num min=1 onchange=on_num_change/>
+                <input class="input" type="number" value={num} min={1} onchange={on_num_change}/>
             </div>
             <div class="control column is-2 is-flex is-align-items-center">
             {
                 is_last.then(|| {
                     let add = callback.reform(|_| Msg::AddInput);
                     html!{
-                        <div class="icon is-medium is-clickable" onclick=add>
+                        <div class="icon is-medium is-clickable" onclick={add}>
                             <i class="fas fa-plus-circle"></i>
                         </div>
                     }

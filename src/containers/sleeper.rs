@@ -1,16 +1,15 @@
 use mytil::{Cleaner, FnOnceCleanable};
 use presentation::sleep::sleep;
 use webutil::util::set_timeout_no_mousemove;
-use yew::{Children, Component, ComponentLink, Properties};
+use yew::{Children, Component, Properties, Context};
 
 pub struct Sleeper {
-    link: ComponentLink<Self>,
     props: Props,
     sleep: bool,
     cleaner: Cleaner<FnOnceCleanable>,
 }
 
-#[derive(Properties, Clone)]
+#[derive(Properties, Clone, PartialEq)]
 pub struct Props {
     pub children: Children,
 }
@@ -24,16 +23,15 @@ impl Component for Sleeper {
 
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         Self {
-            props,
-            link,
+            props: ctx.props().clone(),
             sleep: false,
             cleaner: Cleaner::empty(),
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> yew::ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>,msg: Self::Message) -> bool {
         match msg {
             Msg::Sleep => {
                 self.sleep = true;
@@ -42,11 +40,7 @@ impl Component for Sleeper {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> yew::ShouldRender {
-        todo!()
-    }
-
-    fn view(&self) -> yew::Html {
+    fn view(&self,_ctx: &Context<Self>,) -> yew::Html {
         if self.sleep {
             sleep()
         } else {
@@ -54,9 +48,9 @@ impl Component for Sleeper {
         }
     }
 
-    fn rendered(&mut self, _first_render: bool) {
+    fn rendered(&mut self, ctx: &Context<Self>, _first_render: bool) {
         if _first_render {
-            let link = self.link.clone();
+            let link = ctx.link().clone();
             self.cleaner = set_timeout_no_mousemove(
                 move || {
                     link.send_message(Msg::Sleep);

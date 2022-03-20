@@ -14,7 +14,7 @@ pub fn rolled(name: &str,role: &str, next: &Option<Callback<()>>) -> Html {
             </p>
             {next.as_ref()
                 .map(|next| next.reform(|_| ()))
-                .map(|next| html! {<p class="block"><button onclick=next class="button is-primary">{"もう一度"}</button></p>})
+                .map(|onclick| html! {<p class="block"><button {onclick} class="button is-primary">{"もう一度"}</button></p>})
                 .unwrap_or_default()
             }           
         </section>

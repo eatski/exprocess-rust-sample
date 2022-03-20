@@ -1,7 +1,8 @@
-use yew::prelude::*;
+use yew::{prelude::*};
+
+use crate::util::get_value_from_event;
 pub struct JoinForm {
     value: String,
-    link: ComponentLink<Self>,
     props: Props,
 }
 
@@ -21,15 +22,14 @@ impl Component for JoinForm {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         Self {
             value: "".into(),
-            props: props,
-            link,
+            props: ctx.props().clone(),
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self,  _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Change(value) => self.value = value,
             Msg::Submit => {
@@ -39,24 +39,17 @@ impl Component for JoinForm {
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        false
-    }
-
-    fn view(&self) -> Html {
-        let onchange = self.link.callback(|data| match data {
-            ChangeData::Value(value) => Msg::Change(value),
-            _ => panic!("Invalid Type"),
-        });
-        let onclick = self.link.callback(|_| Msg::Submit);
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let onchange = ctx.link().callback(Msg::Change).reform(get_value_from_event);
+        let onclick = ctx.link().callback(|_| Msg::Submit);
         let value = self.value.clone();
         html! {
             <div class="columns">
                 <div class="column is-one-fifth">
-                    <input type="text" class="input" placeholder="あなたの名前" value=value minlength=1 onchange=onchange/>
+                    <input type="text" class="input" placeholder="あなたの名前" {value} minlength=1 {onchange}/>
                 </div>
                 <div class="column">
-                    <button class="button is-link" onclick=onclick>{"参加する"}</button>
+                    <button class="button is-link" {onclick}>{"参加する"}</button>
                 </div>
             </div>
         }

@@ -2,6 +2,7 @@ use presentation::layout::layout;
 use wasm_bindgen::prelude::*;
 
 use yew::prelude::*;
+use yew_router::prelude::*;
 
 mod containers;
 mod domain;
@@ -12,8 +13,7 @@ use pages::{home::Home, room::Room};
 
 use presentation::{error};
 
-use crate::routing::{AppRoute, AppRouter};
-use crate::containers::sleeper::Sleeper;
+use crate::routing::{AppRoute};
 
 pub enum Msg {
     Error,
@@ -25,21 +25,19 @@ pub enum State {
 }
 
 pub struct App {
-    state: State,
-    link: ComponentLink<Self>
+    state: State
 }
 impl Component for App {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self {
             state: State::Ok,
-            link,
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>,msg: Self::Message) -> bool {
         match msg {
             Msg::Error => {
                 self.state = State::Error;
@@ -48,40 +46,25 @@ impl Component for App {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        false
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self,ctx: &Context<Self>) -> Html {
         layout(match self.state {
             State::Error => error::error(),
             State::Ok => {
-                let link = self.link.clone();
-                let render = AppRouter::render(move |switch: AppRoute| {
-                    let on_error = link.callback(|_| Msg::Error);
-                    match switch {
-                        AppRoute::Home => {
-                            html! { 
-                                <Home on_error=on_error/> 
-                            }
-                        }
-                        AppRoute::Room(room_id) => {
-                            html! { 
-                                <Sleeper>
-                                    <Room room_id=room_id on_error=on_error/> 
-                                </Sleeper>
-                            }
-                        }
-                    }
-                });
+                let on_error = ctx.link().clone().callback(|_| Msg::Error);
                 html! {
-                    <AppRouter
-                        render=render
-                        redirect=AppRouter::redirect(|_| AppRoute::Home)
-                    />
+                    <BrowserRouter>
+                        <Switch<AppRoute> render={Switch::render(move |routes| switch(routes,on_error.clone()))} />
+                    </BrowserRouter>
                 }
             }
         })
+    }
+}
+
+fn switch(routes: &AppRoute, on_error: Callback<()>) -> Html {
+    match routes {
+        AppRoute::Home => html! { <Home {on_error}/> },
+        AppRoute::Room { id } => html! { <Room room_id={id.clone()} {on_error}/> },
     }
 }
 

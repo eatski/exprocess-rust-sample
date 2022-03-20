@@ -11,6 +11,6 @@ path = "src/main.rs"
 [dependencies]
 presentation = {path = "../presentation"}
 wasm-bindgen = "0.2.78"
-yew = "0.18"
+yew = "0.19"
 cafeteria = {path = "../../libs/cafeteria"}
 

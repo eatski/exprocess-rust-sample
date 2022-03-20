@@ -10,7 +10,6 @@ use js_bridge::{JSFunctionCleaner, register_member, sync_members};
 pub struct Meeting {
     props: Props,
     state: State,
-    link: ComponentLink<Self>,
     on_destroy: JSFunctionCleaner
 }
 enum State {
@@ -23,7 +22,7 @@ struct Fetched {
     form:GuestForm
 }
 
-#[derive(Clone, Debug, Properties)]
+#[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub room_id : String,
     pub on_error: Callback<()>
@@ -38,8 +37,9 @@ impl Component for Meeting {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let update = link.callback(Msg::UpdateMember);
+    fn create(ctx: &Context<Self>) -> Self {
+        let props = ctx.props().clone();
+        let update = ctx.link().callback(Msg::UpdateMember);
         let on_error = props.on_error.clone();
         let on_destroy = sync_members(
             props.room_id.as_str(), 
@@ -58,12 +58,11 @@ impl Component for Meeting {
         Self {
             props,
             state: State::Loading,
-            link,
             on_destroy
         }
     }
     
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::UpdateMember(members) => {
                 let form = 
@@ -71,7 +70,7 @@ impl Component for Meeting {
                         GuestForm::Joined
                     } else { 
                         GuestForm::Joinable {
-                            join: self.link.callback(|name| Msg::Join {name})
+                            join: ctx.link().callback(|name| Msg::Join {name})
                         }
                     };
                 self.state = State::Fetched( Fetched {members,form} );
@@ -96,15 +95,11 @@ impl Component for Meeting {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        panic!()
-    }
-
-    fn destroy(&mut self) {
+    fn destroy(&mut self, ctx: &Context<Self>) {
         self.on_destroy.clean();
     }
 
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.state {
             State::Loading => loading(),
             State::Fetched (fetched) => {
@@ -122,7 +117,7 @@ pub struct MeetingHost {
     on_destroy: JSFunctionCleaner
 }
 
-#[derive(Clone, Properties)]
+#[derive(Clone, Properties, PartialEq)]
 pub struct PropsHost {
     pub room_id : String,
     pub start: Callback<()>,
@@ -145,8 +140,9 @@ impl Component for MeetingHost {
     type Message = MsgHost;
     type Properties = PropsHost;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let update = link.callback(MsgHost::UpdateMember);
+    fn create(ctx: &Context<Self>) -> Self {
+        let props = ctx.props().clone();
+        let update = ctx.link().callback(MsgHost::UpdateMember);
         let on_error = props.on_error.clone();
         let on_destroy = sync_members(
             props.room_id.as_str(), 
@@ -168,7 +164,7 @@ impl Component for MeetingHost {
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             MsgHost::UpdateMember(members) => {
                 self.state = StateHost::Fetched {members};
@@ -177,16 +173,11 @@ impl Component for MeetingHost {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        // propsのせいで発火する
-        true
-    }
-
-    fn destroy(&mut self) {
+    fn destroy(&mut self, _ctx: &Context<Self>) {
         self.on_destroy.clean();
     }
 
-    fn view(&self) -> Html {
+    fn view(&self, _ctx: &Context<Self>, ) -> Html {
         match &self.state {
             StateHost::Loading => loading(),
             StateHost::Fetched { members } => {
