@@ -21,7 +21,7 @@ pub fn members_view(members:&Vec<Member>)-> Html {
                             <span>{member.name.as_str()}</span>
                         </td>
                         <td>
-                            {if member.you {html! {<span class="tag is-primary ml-2">{"YOU"}</span>}} else {html! {}}}
+                            {member.you.then(|| html! { <span class="tag is-primary ml-2">{"YOU"}</span>}).unwrap_or_default()}
                         </td>
                     </tr>
                 })}
