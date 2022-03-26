@@ -15,4 +15,5 @@ pub mod not_found;
 pub mod sleep;
 pub mod roles;
 pub mod standby;
+pub mod site_description;
 mod util;
