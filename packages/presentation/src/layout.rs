@@ -7,7 +7,7 @@ pub fn layout(main: Html) -> Html {
             <nav class="navbar" role="navigation" aria-label="main navigation">
                 <div class="navbar-brand">
                     <a class="navbar-item" href="/">
-                        <img class="image is-24x24 mr-2" src="/assets/favicon.ico" />
+                        <img class="image is-24x24 mr-2" alt="logo" src="/assets/favicon.ico" />
                         <strong>{"Roll Role"}</strong>
                     </a>
                 </div>
