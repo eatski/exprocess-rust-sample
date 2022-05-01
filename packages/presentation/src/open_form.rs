@@ -4,6 +4,7 @@ use crate::util::get_value_from_event;
 pub struct OpenForm {
     value: String,
     props: Props,
+    first_focus: bool,
 }
 
 type OnSubmit = Callback<String>;
@@ -16,6 +17,7 @@ pub struct Props {
 pub enum Msg {
     Change(String),
     Submit,
+    Focus
 }
 
 impl Component for OpenForm {
@@ -26,6 +28,7 @@ impl Component for OpenForm {
         Self {
             value: "ホスト".into(),
             props: ctx.props().clone(),
+            first_focus: false
         }
     }
 
@@ -35,6 +38,12 @@ impl Component for OpenForm {
             Msg::Submit => {
                 self.props.on_submit.emit(self.value.clone());
             }
+            Msg::Focus => {
+                if !self.first_focus {
+                    self.first_focus = true;
+                    self.value = "".into();
+                }
+            },
         }
         true
     }
@@ -46,7 +55,7 @@ impl Component for OpenForm {
         html! {
             <div class="columns">
                 <div class="column is-one-fifth">
-                    <input type="text" class="input" placeholder="あなたの名前" {value} minlength=1 {onchange}/>
+                    <input type="text" class="input" placeholder="あなたの名前" {value} minlength=1 {onchange} onfocus={ctx.link().callback(|_| Msg::Focus)}/>
                 </div>
                 <div class="column">
                     <button class="button is-link" {onclick}>{"部屋を作成"}</button>
